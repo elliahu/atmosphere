@@ -1,0 +1,388 @@
+{
+	"connections": [
+		{
+			"from": "fbm2_2",
+			"from_port": 0,
+			"to": "math_6",
+			"to_port": 0
+		},
+		{
+			"from": "voronoi2_2",
+			"from_port": 0,
+			"to": "math_3",
+			"to_port": 1
+		},
+		{
+			"from": "math_3",
+			"from_port": 0,
+			"to": "math_7",
+			"to_port": 0
+		},
+		{
+			"from": "math_6",
+			"from_port": 0,
+			"to": "math_7",
+			"to_port": 1
+		},
+		{
+			"from": "voronoi2",
+			"from_port": 0,
+			"to": "math_2",
+			"to_port": 1
+		},
+		{
+			"from": "voronoi2_3",
+			"from_port": 0,
+			"to": "math_5",
+			"to_port": 1
+		},
+		{
+			"from": "math_2",
+			"from_port": 0,
+			"to": "math",
+			"to_port": 0
+		},
+		{
+			"from": "math_5",
+			"from_port": 0,
+			"to": "math",
+			"to_port": 1
+		},
+		{
+			"from": "math",
+			"from_port": 0,
+			"to": "math_4",
+			"to_port": 0
+		},
+		{
+			"from": "fbm2",
+			"from_port": 0,
+			"to": "math_4",
+			"to_port": 1
+		},
+		{
+			"from": "fbm2_4",
+			"from_port": 0,
+			"to": "math_8",
+			"to_port": 0
+		},
+		{
+			"from": "math_7",
+			"from_port": 0,
+			"to": "combine",
+			"to_port": 0
+		},
+		{
+			"from": "math_8",
+			"from_port": 0,
+			"to": "combine",
+			"to_port": 1
+		},
+		{
+			"from": "math_2",
+			"from_port": 0,
+			"to": "combine",
+			"to_port": 2
+		}
+	],
+	"label": "Graph",
+	"longdesc": "",
+	"name": "322",
+	"node_position": {
+		"x": 0,
+		"y": 0
+	},
+	"nodes": [
+		{
+			"export_paths": {
+
+			},
+			"name": "Material",
+			"node_position": {
+				"x": -93,
+				"y": -19
+			},
+			"parameters": {
+				"albedo_color": {
+					"a": 1,
+					"b": 1,
+					"g": 1,
+					"r": 1,
+					"type": "Color"
+				},
+				"ao": 1,
+				"depth_scale": 0.5,
+				"emission_energy": 1,
+				"flags_transparent": true,
+				"metallic": 0,
+				"normal": 1,
+				"roughness": 1,
+				"size": 11,
+				"sss": 1
+			},
+			"seed_int": 0,
+			"type": "material"
+		},
+		{
+			"name": "combine",
+			"node_position": {
+				"x": 1601,
+				"y": 1019
+			},
+			"parameters": {
+
+			},
+			"seed_int": 0,
+			"type": "combine"
+		},
+		{
+			"name": "fbm2_2",
+			"node_position": {
+				"x": -32.629547,
+				"y": 785.848267
+			},
+			"parameters": {
+				"folds": 0,
+				"iterations": 6,
+				"noise": 1,
+				"offset": 0.14,
+				"persistence": 0.53,
+				"scale_x": 8,
+				"scale_y": 8
+			},
+			"seed_int": 2508543488,
+			"type": "fbm2"
+		},
+		{
+			"name": "voronoi2_2",
+			"node_position": {
+				"x": -23.777222,
+				"y": 528.996826
+			},
+			"parameters": {
+				"intensity": 1.9,
+				"randomness": 0.77,
+				"scale_x": 2,
+				"scale_y": 3,
+				"stretch_x": 1.83,
+				"stretch_y": 0.99
+			},
+			"seed_int": 3059068928,
+			"type": "voronoi2"
+		},
+		{
+			"name": "math_3",
+			"node_position": {
+				"x": 279.222778,
+				"y": 608.996826
+			},
+			"parameters": {
+				"clamp": false,
+				"default_in1": 1,
+				"default_in2": 0,
+				"op": 1
+			},
+			"seed_int": 0,
+			"type": "math"
+		},
+		{
+			"name": "math_6",
+			"node_position": {
+				"x": 366.222778,
+				"y": 871.996826
+			},
+			"parameters": {
+				"clamp": false,
+				"default_in1": 0,
+				"default_in2": 0.63,
+				"op": 1
+			},
+			"seed_int": 0,
+			"type": "math"
+		},
+		{
+			"name": "math_7",
+			"node_position": {
+				"x": 682.222778,
+				"y": 724.996826
+			},
+			"parameters": {
+				"clamp": false,
+				"default_in1": 0,
+				"default_in2": 0,
+				"op": 1
+			},
+			"seed_int": 0,
+			"type": "math"
+		},
+		{
+			"name": "fbm2_3",
+			"node_position": {
+				"x": -433.652466,
+				"y": 1195.710205
+			},
+			"parameters": {
+				"folds": 0,
+				"iterations": 1,
+				"noise": 1,
+				"offset": 0.15,
+				"persistence": 0.52,
+				"scale_x": 4,
+				"scale_y": 4
+			},
+			"seed_int": 815387200,
+			"type": "fbm2"
+		},
+		{
+			"name": "voronoi2",
+			"node_position": {
+				"x": 175.973633,
+				"y": 1320.948486
+			},
+			"parameters": {
+				"intensity": 1.5,
+				"randomness": 0.85,
+				"scale_x": 5,
+				"scale_y": 5,
+				"stretch_x": 1,
+				"stretch_y": 1
+			},
+			"seed_int": 2781758208,
+			"type": "voronoi2"
+		},
+		{
+			"name": "math_2",
+			"node_position": {
+				"x": 549.973633,
+				"y": 1338.948486
+			},
+			"parameters": {
+				"clamp": false,
+				"default_in1": 1,
+				"default_in2": 0,
+				"op": 1
+			},
+			"seed_int": 0,
+			"type": "math"
+		},
+		{
+			"name": "voronoi2_3",
+			"node_position": {
+				"x": 384.655518,
+				"y": 1572.044312
+			},
+			"parameters": {
+				"intensity": 1.67,
+				"randomness": 0.85,
+				"scale_x": 2,
+				"scale_y": 3,
+				"stretch_x": 1,
+				"stretch_y": 1
+			},
+			"seed_int": 1750265600,
+			"type": "voronoi2"
+		},
+		{
+			"name": "math_5",
+			"node_position": {
+				"x": 696.655518,
+				"y": 1584.044312
+			},
+			"parameters": {
+				"clamp": false,
+				"default_in1": 1,
+				"default_in2": 0,
+				"op": 1
+			},
+			"seed_int": 0,
+			"type": "math"
+		},
+		{
+			"name": "math",
+			"node_position": {
+				"x": 976.655518,
+				"y": 1352.044312
+			},
+			"parameters": {
+				"clamp": true,
+				"default_in1": 0,
+				"default_in2": 0,
+				"op": 14
+			},
+			"seed_int": 0,
+			"type": "math"
+		},
+		{
+			"name": "fbm2",
+			"node_position": {
+				"x": 1005.655518,
+				"y": 1577.236572
+			},
+			"parameters": {
+				"folds": 0,
+				"iterations": 5,
+				"noise": 1,
+				"offset": 0,
+				"persistence": 0.5,
+				"scale_x": 4,
+				"scale_y": 4
+			},
+			"seed_int": 0,
+			"type": "fbm2"
+		},
+		{
+			"name": "math_4",
+			"node_position": {
+				"x": 1339.655518,
+				"y": 1428.236572
+			},
+			"parameters": {
+				"clamp": true,
+				"default_in1": 0,
+				"default_in2": 0,
+				"op": 6
+			},
+			"seed_int": 0,
+			"type": "math"
+		},
+		{
+			"name": "fbm2_4",
+			"node_position": {
+				"x": -557.344421,
+				"y": 838.503418
+			},
+			"parameters": {
+				"folds": 0,
+				"iterations": 5,
+				"noise": 1,
+				"offset": 0,
+				"persistence": 0.5,
+				"scale_x": 3,
+				"scale_y": 4
+			},
+			"seed_int": 604442560,
+			"type": "fbm2"
+		},
+		{
+			"name": "math_8",
+			"node_position": {
+				"x": -278.344421,
+				"y": 1018.503418
+			},
+			"parameters": {
+				"clamp": false,
+				"default_in1": 0.05,
+				"default_in2": 3,
+				"op": 6
+			},
+			"seed_int": 0,
+			"type": "math"
+		}
+	],
+	"parameters": {
+
+	},
+	"seed_int": 0,
+	"shortdesc": "",
+	"type": "graph"
+}

@@ -1,0 +1,12 @@
+{
+  "name" : "hammock",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "9b5cb8e554487f3edb5d50b80188883846f81e14",
+  "dependencies" : [ {
+    "name" : "vcpkg-cmake-config",
+    "version>=" : "2024-05-23"
+  }, {
+    "name" : "vcpkg-cmake",
+    "version>=" : "2024-04-23"
+  } ]
+}

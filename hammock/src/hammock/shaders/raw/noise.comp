@@ -1,0 +1,138 @@
+#version 450
+#define MAX_POINTS 200
+
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+layout (binding = 0, rgba32f) uniform image3D storageImage;
+
+layout (std140, binding = 1) buffer Data
+{
+    vec4 points[MAX_POINTS * MAX_POINTS * MAX_POINTS];
+} data;
+
+// Push constants for multi‐octave Worley
+layout (push_constant) uniform PushConstants {
+    vec4 cellSize;      // cellSize.xyz used in the code
+    vec4 gridSize;      // gridSize.xyz used in getCellIndex
+    int numOctaves;     // how many octaves to sum
+    float persistence;  // amplitude factor per octave
+    float lacunarity;   // frequency multiplier per octave
+    float fallOff;
+    int channel;
+} consts;
+
+// A simple 1D -> 1D hash function returning [0..1)
+float hash11(float p) {
+    p = fract(p * 0.1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+// Return a small 3D offset for the given octave
+vec3 randomOffsetForOctave(int octave) {
+    float o = float(octave);
+    return vec3(
+    hash11(o + 1.234),  // shift each component differently
+    hash11(o + 2.345),
+    hash11(o + 3.456)
+    ) * 0.2; // scale the offset as desired
+}
+
+// Helper function to get the cell index from 3D coordinates with wrapping
+int getCellIndex(ivec3 cell) {
+    // Wrap coordinates to stay within [0, gridSize)
+    cell.x = (cell.x + int(consts.gridSize.x)) % int(consts.gridSize.x);
+    cell.y = (cell.y + int(consts.gridSize.y)) % int(consts.gridSize.y);
+    cell.z = (cell.z + int(consts.gridSize.z)) % int(consts.gridSize.z);
+
+    return cell.x * int(consts.gridSize.y * consts.gridSize.z)
+    + cell.y * int(consts.gridSize.z)
+    + cell.z;
+}
+
+// Wrapped distance for seamless tiling in [0,1]
+float wrappedDistance(vec3 p1, vec3 p2) {
+    vec3 diff = abs(p1 - p2);
+    diff = min(diff, 1.0 - diff); // wrap around edges
+    return length(diff);
+}
+
+void main() {
+    ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
+    ivec3 texSize = imageSize(storageImage);
+
+    // Bounds check
+    if (pos.x >= texSize.x || pos.y >= texSize.y || pos.z >= texSize.z) {
+        return;
+    }
+
+    // Convert position to normalized [0..1] space
+    vec3 worldPos = vec3(pos) / vec3(texSize);
+
+    float totalNoise   = 0.0;  // accumulates all octaves
+    float amplitude    = 1.0;  // current octave amplitude
+    float maxAmplitude = 0.0;  // for normalization
+    float frequency    = 1.0;  // current octave frequency multiplier
+
+    for (int octave = 0; octave < consts.numOctaves; ++octave) {
+        // Scale coordinates, then fract to wrap them back into [0,1]
+        vec3 offset = randomOffsetForOctave(octave);
+        vec3 octavePos = fract((worldPos + offset) * frequency);
+
+        // Determine which cell 'octavePos' belongs to
+        ivec3 cell = ivec3(floor(octavePos / consts.cellSize.xyz));
+
+        float minDist = 10000.0;
+
+        // Search the 3×3×3 neighborhood of cells
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -1; z <= 1; z++) {
+                    ivec3 neighborCell = cell + ivec3(x, y, z);
+
+                    int index = getCellIndex(neighborCell);
+                    vec3 featurePoint = data.points[index].xyz;
+
+                    float dist = wrappedDistance(octavePos, featurePoint);
+                    minDist = min(minDist, dist);
+                }
+            }
+        }
+
+        // Convert distance to a Worley value [0..1]
+        float worleyVal = 1.0 - clamp(minDist * 3.0, 0.0, 1.0);
+
+        // Accumulate this octave’s contribution
+        totalNoise   += worleyVal * amplitude;
+        maxAmplitude += amplitude;
+
+        // Prepare for next octave
+        amplitude *= consts.persistence;   // reduce amplitude
+        frequency *= consts.lacunarity;    // increase frequency
+    }
+
+    // Normalize the summed noise
+    float finalVal = pow((totalNoise / maxAmplitude), consts.fallOff);
+
+    vec4 originalValue = imageLoad(storageImage, pos);
+
+    if(consts.channel == 0){
+        originalValue.r = finalVal;
+    }
+
+    if(consts.channel == 1){
+        originalValue.g = finalVal;
+    }
+
+    if(consts.channel == 2){
+        originalValue.b = finalVal;
+    }
+
+    if(consts.channel == 3){
+        originalValue.a = finalVal;
+    }
+
+    // Write to the 3D image
+    imageStore(storageImage, pos, originalValue);
+}

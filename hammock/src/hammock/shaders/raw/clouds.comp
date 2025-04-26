@@ -1,0 +1,419 @@
+#version 450
+
+#include "common/cloudsCommon.glsl"
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+// Unifrom buffer
+layout ( binding = 0) uniform CameraUBO
+{
+    mat4 inv_view;
+    mat4 inv_proj;
+    mat4 invViewProj;
+    vec4 cameraPosition;
+    float resX;
+    float resY;
+    float fov;
+};
+//Uniform buffer
+layout (binding = 1) uniform TimeUBO
+{
+    float iTime;
+    float timeOfDay;
+};
+// Uniform buffer
+layout (binding = 2) uniform SunAndSkyUBO {
+    vec4 lightColor;
+    vec4 lightDirection;
+    vec4 windDirection;
+};
+// Storage image
+layout (binding = 3, rgba32f) uniform writeonly image2D colorImage;
+
+// Combined image samplers
+layout (binding = 4) uniform sampler3D baseNoiseSampler;
+layout (binding = 5) uniform sampler3D detailNoiseSampler;
+layout (binding = 6) uniform sampler2D curlNoiseSampler;
+layout (binding = 7) uniform sampler2D cloudMapSampler;
+layout (binding = 8) uniform sampler2D skySampler;
+
+
+ivec2 iResolution = ivec2(resX, resY);
+
+
+
+layout (push_constant) uniform PushConstants {
+    float coverageMultiplier;
+    float coverageRepeat;
+    float base_multiplier;
+    float detail_multiplier;
+    float cloudSpeed;
+    float crispiness;
+    float curliness;
+    float absorption;
+    float scattering;
+    float densityMultiplier;
+    float earthRadius;
+    float sphereInnerRadius;
+    float sphereOuterRadius;
+    float eccentricity;
+    float silverIntensity;
+    float silverSpread;
+    float ambientStrength;
+    float cloudTypeOverride;
+    float lightStepsLength;
+    float epicDistance;
+};
+
+#define SCATTERING scattering
+#define ABSORPTION absorption
+
+
+const vec3 noiseKernel[6u] = vec3[]
+(
+vec3(0.38051305, 0.92453449, -0.02111345),
+vec3(-0.50625799, -0.03590792, -0.86163418),
+vec3(-0.32509218, -0.94557439, 0.01428793),
+vec3(0.09026238, -0.27376545, 0.95755165),
+vec3(0.28128598, 0.42443639, -0.86065785),
+vec3(-0.16852403, 0.14748697, 0.97460106)
+);
+
+// Cloud types height density gradients
+#define STRATUS_GRADIENT vec4(0.0, 0.1, 0.2, 0.3)
+#define STRATOCUMULUS_GRADIENT vec4(0.02, 0.2, 0.48, 0.625)
+#define CUMULUS_GRADIENT vec4(0.00, 0.1625, 0.88, 0.98)
+
+// Wind
+#define WIND_DIRECTION normalize(windDirection.xyz)
+
+// Earth
+#define EARTH_RADIUS earthRadius
+#define SPHERE_INNER_RADIUS (EARTH_RADIUS + sphereInnerRadius)
+#define SPHERE_OUTER_RADIUS (SPHERE_INNER_RADIUS + sphereOuterRadius)
+#define SPHERE_DELTA float(SPHERE_OUTER_RADIUS - SPHERE_INNER_RADIUS)
+vec3 sphereCenter = vec3(0.0, -EARTH_RADIUS, 0.0);
+
+// Cloud props
+#define CLOUDS_MIN_TRANSMITTANCE 1e-1
+#define CLOUDS_TRANSMITTANCE_THRESHOLD 1.0 - CLOUDS_MIN_TRANSMITTANCE
+
+// Sun
+#define SUN_DIR normalize(lightDirection.xyz)
+#define SUN_COLOR lightColor.rgb
+
+// Cloud sampling
+#define CLOUD_TOP_OFFSET 750.0
+#define SATURATE(x) clamp(x, 0.0, 1.0)
+#define CLOUD_SCALE crispiness
+#define CLOUD_SPEED cloudSpeed
+
+// Bayer filter
+#define BAYER_FACTOR 1.0 / 16.0
+const float bayerFilter[16u] = float[]
+(
+0.0 * BAYER_FACTOR, 8.0 * BAYER_FACTOR, 2.0 * BAYER_FACTOR, 10.0 * BAYER_FACTOR,
+12.0 * BAYER_FACTOR, 4.0 * BAYER_FACTOR, 14.0 * BAYER_FACTOR, 6.0 * BAYER_FACTOR,
+3.0 * BAYER_FACTOR, 11.0 * BAYER_FACTOR, 1.0 * BAYER_FACTOR, 9.0 * BAYER_FACTOR,
+15.0 * BAYER_FACTOR, 7.0 * BAYER_FACTOR, 13.0 * BAYER_FACTOR, 5.0 * BAYER_FACTOR
+);
+
+#define NUM_STEPS 64
+
+#define NUM_LIGHT_STEPS 6
+#define LIGHT_STEP_SIZE lightStepsLength
+
+// Returns a relative hight in cloud layer 0 to 1
+float getHeightFraction(vec3 inPos) {
+    return (length(inPos - sphereCenter) - SPHERE_INNER_RADIUS) / (SPHERE_OUTER_RADIUS - SPHERE_INNER_RADIUS);
+}
+
+// Returns density for a specific cloud type
+// 0.0 stratus
+// 0.5 stratocumulus
+// 1.0 cumulus
+float getDensityForCloudType(float heightFraction, float cloudType)
+{
+    float stratusFactor = 1.0 - clamp(cloudType * 2.0, 0.0, 1.0);
+    float stratoCumulusFactor = 1.0 - abs(cloudType - 0.5) * 2.0;
+    float cumulusFactor = clamp(cloudType - 0.5, 0.0, 1.0) * 2.0;
+
+    vec4 baseGradient = stratusFactor * STRATUS_GRADIENT + stratoCumulusFactor * STRATOCUMULUS_GRADIENT + cumulusFactor * CUMULUS_GRADIENT;
+
+    // gradicent computation (see Siggraph 2017 Nubis-Decima talk)
+    return remap(heightFraction, baseGradient.x, baseGradient.y, 0.0, 1.0) * remap(heightFraction, baseGradient.z, baseGradient.w, 1.0, 0.0);
+}
+
+// spherical uv projection
+vec2 getUVProjection(vec3 p) {
+    return p.xz / SPHERE_INNER_RADIUS + 0.5;
+}
+
+// Smples a density at a point
+// If expensive, detail hight-frequency noise will be used to erode the base shape
+CloudSample sampleCloudDensity(vec3 p, bool expensive, float lod) {
+    // Init cloud sample
+    CloudSample cloudSample;
+    // Height fraction and uv coords for sampling
+    float heightFraction = getHeightFraction(p);
+    vec3 animation = heightFraction * WIND_DIRECTION * CLOUD_TOP_OFFSET + WIND_DIRECTION * iTime * CLOUD_SPEED;
+    vec2 staticUv = getUVProjection(p);
+    vec2 animatedUv = getUVProjection(p + animation);
+
+    // Early exit if out of the cloud layer
+    if (heightFraction < 0.0 || heightFraction > 1.0) {
+        return emptyCloudSample();
+    }
+
+    // Sample low frequency noise to contruct FBM
+    vec4 lowFrequencyNoise = textureLod(baseNoiseSampler, vec3(staticUv * CLOUD_SCALE, heightFraction), lod);
+    float lowFreqFBM = dot(lowFrequencyNoise.gba, vec3(0.625, 0.25, 0.125));
+    float baseCloud = remap(lowFrequencyNoise.r, -(1.0 - lowFreqFBM), 1.0, 0.0, 1.0);
+
+    // Sample the cloud map
+    vec3 cloudMap = texture(cloudMapSampler, staticUv * coverageRepeat).rgb;
+    // Coverage is in red and green channels
+    const float coverage = mix(0.0, cloudMap.g, coverageMultiplier);
+    // Cloud type is in the blue channel
+    float cloudType = mix(0.0, cloudMap.b, cloudTypeOverride);
+    // Compute the distance of the smaple point from the camera and remap it to 0 to 1
+    float dst = remap(clamp(length(p - cameraPosition.xyz), 0.0, epicDistance),0.0, epicDistance, 0.0, 1.0);
+    // Gradually change clouds to stratocumulus type at the horizon
+    cloudType = clamp(mix(cloudType, 1.0, dst),0.0, 1.0);
+
+
+    // Adjust the density based on the cloud type
+    float cloudTypeDensity = getDensityForCloudType(heightFraction, cloudType);
+    baseCloud *= (cloudTypeDensity / heightFraction);
+
+    // Apply the coverage
+    float baseCloudWithCoverage = remap(baseCloud, coverage, 1.0, 0.0, 1.0);
+    baseCloudWithCoverage *= coverage;
+
+    // Check if we are doing expensive sampling
+    if (expensive)
+    {
+        // Curl noise for whisps
+        vec2 whisp = texture(curlNoiseSampler, animatedUv).xy;
+        // Use the curl noise to offset sample position
+        vec2 detailSamplePos = (staticUv * CLOUD_SCALE) + whisp * curliness * (1.0 - heightFraction);
+
+        // Sample hight frequency noise and build the FBM
+        vec3 highFrequencyNoise = textureLod(detailNoiseSampler, vec3(detailSamplePos, heightFraction), lod).rgb;
+        float highFreqFBM = dot(highFrequencyNoise, vec3(0.625, 0.25, 0.125));
+
+        float highFreqNoiseModifier = mix(highFreqFBM, 1.0 - highFreqFBM, heightFraction);
+        baseCloudWithCoverage = baseCloudWithCoverage - highFreqNoiseModifier * (1.0 - baseCloudWithCoverage);
+        baseCloudWithCoverage = remap(baseCloudWithCoverage * base_multiplier, highFreqFBM * detail_multiplier, 1.0, 0.0, 1.0);
+    }
+
+    cloudSample.density = saturate(baseCloudWithCoverage);
+    cloudSample.coverage = coverage;
+    cloudSample.type = cloudType;
+
+
+    return cloudSample;
+}
+
+// Compute level of attenuation along a light ray
+// TODO: cone sampling
+float lightRayAttenuation(vec3 p) {
+    vec3 dirToLight = normalize(lightDirection.xyz);
+    float attenuationAlongLightRay = 1.0;
+    float opticalDepth = 0.0;
+
+    float dstOut = intersectRaySphere(sphereCenter, SPHERE_OUTER_RADIUS, p, dirToLight).y;
+    float stepSize = dstOut / NUM_LIGHT_STEPS;
+
+    // Lightmarch
+    for (int l = 0; l < NUM_LIGHT_STEPS; l++) {
+        vec3 pos = p + dirToLight * l * stepSize;
+        float heightFraction = getHeightFraction(pos);
+
+        if (heightFraction >= 0) {
+            float cloudType = 0.0;
+            CloudSample cloudSample = sampleCloudDensity(pos, false, l / 16);
+            float cloudDensity = cloudSample.density;
+            if (cloudDensity > 0.0) {
+                // Beers law
+                float attenuation = exp(-cloudDensity * stepSize *  (ABSORPTION));
+                attenuationAlongLightRay *= attenuation;
+
+                opticalDepth += cloudDensity * stepSize;
+            }
+        }
+
+        if (attenuationAlongLightRay < 0.01) break;
+    }
+
+    float multipleScatteringAprox = powder(opticalDepth * 0.0001);
+
+    return mix(attenuationAlongLightRay, multipleScatteringAprox * 0.4, 0.1);
+}
+
+// Raymarches from the start to the end position
+vec4 raymarch(vec3 start, vec3 end, vec3 skyColor) {
+    // Create the ray to march along
+    vec3 ray = end - start;
+    float rayLenght = length(ray);
+    vec3 rayDirection = normalize(ray);
+
+    // Sampling position (jittered)
+    float stepSize = rayLenght / NUM_STEPS;
+    uvec2 fragCoord = gl_GlobalInvocationID.xy;
+    int a = int(fragCoord.x) % 4;
+    int b = int(fragCoord.y) % 4;
+    vec3 p = start + rayDirection * stepSize * bayerFilter[a * 4 + b];
+
+    // Phase function
+    vec3 L = normalize(SUN_DIR);
+    vec3 V = normalize(rayDirection);
+    float cosTheta = dot(L, V);
+    float phase = directedPhase(cosTheta, eccentricity, silverIntensity, silverSpread);
+
+    // Raymarch variables
+    float totalAttenuation = 1.0;
+    vec3 inScatteredLight = vec3(0.0);
+
+    // Raymarch
+    // TODO adjust step size based on the raymarch distance (64 straight up, 128 forward)
+    // TODO optimization: march with big steps until dense region, then backstep one step and sample small steps. if multiple small steps return 0 density, do large steps again
+    for (int i = 0; i < NUM_STEPS; i++) {
+        CloudSample cloudSample = sampleCloudDensity(p, true, i / 16);
+        float density = cloudSample.density;
+
+        // Expensive computation only for non-zero density regions
+        if (density > 0.1) {
+            // compute the height fraction: relative height in cloud layer <0;1>
+            float heightFraction = getHeightFraction(p);
+
+            // Beer-powder aprox
+            float powderTerm = powder(density);
+
+            // compute the light ray attenuation
+            float attenuationAlongLightRay = lightRayAttenuation(p);
+
+            // Sunlight
+            vec3 sunLight = SUN_COLOR * attenuationAlongLightRay;
+
+            // Ambient light
+            vec3 ambientLight = skyColor * heightFraction;
+
+            vec3 lightContribution = sunLight + ambientLight;
+
+            // Compute the differential in-scattering contribution using the current transmittance
+            vec3 dL = totalAttenuation * density * SCATTERING * phase * lightContribution * powderTerm * stepSize;
+            inScatteredLight += dL;
+
+            // Update total transmittance for extinction along the ray segment
+            float attenuation = exp(-density * stepSize * (ABSORPTION ));
+            totalAttenuation *= attenuation;
+        }
+
+        // Early exit if fully opaque
+        if (totalAttenuation < 0.01) {
+            break;
+        }
+
+        // Move one step
+        p += rayDirection * stepSize;
+    }
+
+    // Compute alpha from the accumulated optical depth,
+    // Here we base it on the remaining transmittance.
+    float alpha = 1.0 - totalAttenuation;
+    return vec4(inScatteredLight, alpha);
+}
+
+
+void main()
+{
+    vec4 fragColor_v, cloudDistance_v;
+    ivec2 fragCoord = ivec2(gl_GlobalInvocationID.xy);
+
+    // Compute ray direction.
+    vec4 ray_clip = vec4(computeClipSpaceCoord(fragCoord, iResolution.xy), 1.0);
+    vec4 ray_view = inv_proj * ray_clip;
+    ray_view = vec4(ray_view.xy, -1.0, 0.0);
+    vec3 rayDirection = (inv_view * ray_view).xyz;
+    rayDirection = normalize(rayDirection);
+    vec3 rayOrigin = cameraPosition.xyz;
+
+    vec4 v = vec4(0.0);
+    vec2 normCoord = vec2(fragCoord) / vec2(iResolution);
+    vec4 skyColor = texture(skySampler, normCoord);
+
+    // Compute distance from camera to sphere center.
+    float cameraDist = length(rayOrigin - sphereCenter);
+    bool insideInnerSphere = cameraDist < SPHERE_INNER_RADIUS;
+    bool insideOuterSphere = cameraDist < SPHERE_OUTER_RADIUS;
+    bool aboveOuterSphere = cameraDist > SPHERE_OUTER_RADIUS;
+
+    // Get intersections.
+    vec2 planetIntersect = intersectRaySphere(sphereCenter, EARTH_RADIUS, rayOrigin, rayDirection);
+    vec2 innerCloudIntersect = intersectRaySphere(sphereCenter, SPHERE_INNER_RADIUS, rayOrigin, rayDirection);
+    vec2 outerCloudIntersect = intersectRaySphere(sphereCenter, SPHERE_OUTER_RADIUS, rayOrigin, rayDirection);
+    float outerCloudExit = outerCloudIntersect.x + outerCloudIntersect.y; // actual exit distance
+
+    float startDist, endDist;
+
+    // Case 1: Camera is inside inner cloud sphere.
+    if (insideInnerSphere) {
+        startDist = 0.0; // Start at camera.
+        if (planetIntersect.x > 0.0 && planetIntersect.x < outerCloudExit) {
+            endDist = planetIntersect.x; // Stop if planet is hit.
+        } else {
+            endDist = outerCloudExit;
+        }
+    }
+    // Case 2: Camera is between inner and outer cloud spheres.
+    else if (insideOuterSphere) {
+        startDist = max(0.0, innerCloudIntersect.x); // Start at camera or inner sphere entry.
+        if (planetIntersect.x > 0.0 && planetIntersect.x < outerCloudExit) {
+            endDist = planetIntersect.x; // Clip clouds by the planet.
+        } else {
+            endDist = outerCloudExit;
+        }
+    }
+    // Case 3: Camera is above the outer cloud sphere.
+    else if (aboveOuterSphere) {
+        // Allow clouds even if the entry is exactly 0.
+        if (outerCloudIntersect.x < 0.0) {
+            imageStore(colorImage, fragCoord, vec4(0.0));
+            return;
+        }
+        startDist = outerCloudIntersect.x; // Enter at outer sphere.
+        if (innerCloudIntersect.x > 0.0) {
+            // If ray goes through clouds and then enters the inner sphere...
+            if (planetIntersect.x > 0.0 && planetIntersect.x < innerCloudIntersect.x) {
+                endDist = planetIntersect.x;
+            } else {
+                endDist = innerCloudIntersect.x;
+            }
+        } else {
+            // Ray enters outer sphere but doesn't hit inner cloud sphere.
+            if (planetIntersect.x > 0.0 && planetIntersect.x < outerCloudExit) {
+                endDist = planetIntersect.x;
+            } else {
+                endDist = outerCloudExit;
+            }
+        }
+    }
+
+    // Validate segment.
+    if (endDist <= startDist || startDist < 0.0) {
+        imageStore(colorImage, fragCoord, vec4(0.0));
+        return;
+    }
+
+    vec3 start = rayOrigin + rayDirection * startDist;
+    vec3 end = rayOrigin + rayDirection * endDist;
+
+    // Perform raymarching for clouds.
+    v = raymarch(start, end, skyColor.rgb);
+    fragColor_v = v;
+
+    imageStore(colorImage, fragCoord, fragColor_v);
+}
+
+

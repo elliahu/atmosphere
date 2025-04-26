@@ -1,0 +1,1 @@
+add_subdirectory(environment_maps_generator)
