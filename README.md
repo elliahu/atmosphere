@@ -143,7 +143,7 @@ This will differ based on your system but it should display your GPU, and select
 
 # Controls
 Once the atmosphere renderer is launched, you can play around. 
-- **To update values in number inputs, you need to click and drag left or right** 
+- **To update values in number inputs, you need to click and drag left or right**. You cannot type values directly. Sorry for that.
 - Movement: Using W,A,S,D to fly around, SPACE to fly up and LSHIFT to fly down. You can also adjust precise camera position using the camera options window in `Options -> Camera options`
 - What each option in each window does is described in the thesis's appendix
 
