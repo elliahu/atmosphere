@@ -194,11 +194,12 @@ class Renderer final{
     void update();
 
 
-
+    WeatherMap weatherMap = WeatherMap::Stratocumulus;
+    TerrainType terrainType = TerrainType::Default;
 
 public:
     // Constructor
-    Renderer(const int32_t width, const int32_t height);
+    Renderer(const int32_t width, const int32_t height, WeatherMap weatherMap = WeatherMap::Stratocumulus, TerrainType terrainType = TerrainType::Default);
     // Destructor
     ~Renderer();
 

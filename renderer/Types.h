@@ -6,6 +6,18 @@
 #define COMPILED_SHADER_PATH(shader) CWD("spv/" shader ".spv")
 #define GROUPS_COUNT(res,size) ((res+size-1)/size)
 
+enum class WeatherMap{
+    Stratus,
+    Stratocumulus,
+    Cumulus,
+    Nubis,
+};
+
+enum class TerrainType{
+    Default,
+    Mountain,
+};
+
 struct GeometryPushConstantData {
     HmckMat4 modelViewProjection;
     HmckVec4 lightDirection;

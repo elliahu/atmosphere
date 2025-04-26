@@ -23,8 +23,8 @@ public:
 
 
 
-    CloudsPass(Device &device, ResourceManager &resourceManager, Profiler& profiler)
-        : IRenderGroup(device, resourceManager, profiler) {
+    CloudsPass(Device &device, ResourceManager &resourceManager, Profiler& profiler, WeatherMap weatherMap)
+        : IRenderGroup(device, resourceManager, profiler), weatherMapEnum(weatherMap) {
     }
 
     // This is passed as buffer
@@ -76,6 +76,8 @@ private:
 
     // Inputs
     Image *cameraDepth;
+
+    WeatherMap weatherMapEnum;
 
     void prepareBuffers();
 

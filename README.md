@@ -13,13 +13,15 @@ Please make sure to follow these steps exactly as these were tested to be workin
 
 **MacOS unfortunately is not supported**
 
+
+
+# Building
+
 ## Vulkan SDK required
 The atmosphere renderer uses [my own Vulkan engine/wrapper](https://github.com/elliahu/hammock) called **hammock**. That means Vulkan SDK version 1.3.296 or newer is **required**. Recommended version that was used during a benchmark is 1.4.309. You can download Vulkan SDK installer from official [LunarG](https://vulkan.lunarg.com/sdk/home) repository. If you already have Vulkan SDK, the installation will install new version alongside the old version and update the PATH to point to the new version so there should be no problem. You can safely delete the old directory containing the old SDK.
 
 **After the installation, make sure VULKAN_SDK environment variable is present.** It may look like this on Windows: `C:\VulkanSDK\1.4.309.0` and on Linux
 
-
-## Building
 ### Setup
 This is te **required** build environment:
 - **Python** (any relevant version) is required as it is used to compile shader using `slangc` compiler that comes with Vulkan SDK. Simple python script has to be run to transpile the shader into SPIR-V format that is used by Vulkan. This is further explained in the Running section.
@@ -89,7 +91,7 @@ You should see output similar to this:
 ```
 If you have troubles building, see Troubleshooting section bellow
 
-## Running
+# Running
 First of all, shaders need to be compiled using the `compile_shaders.py` script. Run the following command:
 ```bash
 python compile_shaders.py
@@ -134,13 +136,27 @@ Present mode: Mailbox
 ```
 This will differ based on your system but it should display your GPU, and select the best present mode for your OS and GPU. If you ses that present mode is FIFO, that means a V-Sync was selected as a fallback option and your FPS will be limited to the sync interval of your display, possibly 60hz. If you see any debug messages in the console that starts like `DEBUG: ...` then you are running the app in the debug mode and you need to reconfigure and recompile using the `-DCMAKE_BUILD_TYPE=Release` option.
 
-## Controls
+# Controls
 Once the atmosphere renderer is launched, you can play around. 
 - **To update values in number inputs, you need to click and drag left or right** 
 - Movement: Using W,A,S,D to fly around, SPACE to fly up and LSHIFT to fly down. You can also adjust precise camera position using the camera options window in `Options -> Camera options`
 - What each option in each window does is described in the thesis's appendix
 
+# Project structure
+- `assets` contains all the statically loaded assets such as weather maps, noises etc.
+- `hammock` contains the Vulkan engine/wrapper used to build the renderer
+- `img` contains some screenshots
+- `renderer` contains source code of the actual atmosphere renderer
+- `scenes` contains the Participating medium scene playground scene where you can play around with a participating media rendering parameters. Note this scene is not part of the renderer and as such is not optimized and may not even be stable
+- `shaders` contains Slang shaders
 
+If you would like to use different weather map than possible by params, you can change the loaded file in the `renderer/clouds/CloudPass.cpp` file in function `CloudsPass::prepareResources()`:
+```cpp
+AutoDelete weatherMapData(
+    readImage(ASSET_PATH("weather/stratocumulus.png"), w, h, c, Filesystem::ImageFormat::R8G8B8A8_UNORM), [](const void *p) {
+            delete[] static_cast<const uchar8_t *>(p);
+});
+```
 
 # Gallery
 ![One](img/polojasno.png)

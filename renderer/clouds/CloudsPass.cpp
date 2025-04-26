@@ -158,7 +158,18 @@ void CloudsPass::prepareResources() {
     }
     // Weather map
     {
-        AutoDelete weatherMapData(readImage(ASSET_PATH("weather/stratocumulus.png"), w, h, c,
+        std::string weatherMapName = ASSET_PATH("weather/stratocumulus.png");
+        if(weatherMapEnum == WeatherMap::Stratus) {
+            weatherMapName = ASSET_PATH("weather/stratus.png");
+        } else if(weatherMapEnum == WeatherMap::Stratocumulus) {
+            weatherMapName = ASSET_PATH("weather/stratocumulus.png");
+        } else if(weatherMapEnum == WeatherMap::Cumulus) {
+            weatherMapName = ASSET_PATH("weather/cumulus.png");
+        } else if(weatherMapEnum == WeatherMap::Nubis) {
+            weatherMapName = ASSET_PATH("weather/nubis.png");
+        }
+
+        AutoDelete weatherMapData(readImage(weatherMapName, w, h, c,
                                             Filesystem::ImageFormat::R8G8B8A8_UNORM), [](const void *p) {
             delete[] static_cast<const uchar8_t *>(p);
         });

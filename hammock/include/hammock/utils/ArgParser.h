@@ -51,8 +51,13 @@ namespace hammock {
             }
 
             const auto &arg = arguments_.at(name);
+    
             if (arg.value.empty()) {
-                throw std::invalid_argument("Argument value is missing: " + name);
+                if (arg.required) {
+                    throw std::invalid_argument("Argument value is missing: " + name);
+                } else {
+                    return T(); // return default value
+                }
             }
 
             T value;

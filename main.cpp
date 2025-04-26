@@ -9,25 +9,42 @@ using namespace hammock;
 
 int main(int argc, char * argv[]) {
     ArgParser parser;
-    parser.addArgument<int32_t>("width", "Window width in pixels");
-    parser.addArgument<int32_t>("height", "Window height in pixels");
-    parser.addArgument<std::string>("scene", "Scene option: [noise, clouds, medium, renderer]");
+    parser.addArgument<int32_t>("width", "Window width in pixels", true);
+    parser.addArgument<int32_t>("height", "Window height in pixels", true);
+    parser.addArgument<std::string>("scene", "Scene option: [medium, renderer]", false);
+    parser.addArgument<std::string>("weather", "Weather map option: [stratus, stratocumulus, cumulus, nubis]", false);
+    parser.addArgument<std::string>("terrain", "Terrain type: [default, mountain]", false);
 
     try {
         parser.parse(argc, argv);
     } catch (const std::exception & e) {
+        parser.printHelp();
         Logger::log(LOG_LEVEL_ERROR, e.what());
     }
 
     const auto width = parser.get<int32_t>("width");
     const auto height = parser.get<int32_t>("height");
     auto selectedScene = parser.get<std::string>("scene");
+    auto weatherMap = parser.get<std::string>("weather");
+    auto terrain = parser.get<std::string>("terrain");
 
-    if (selectedScene == "medium") {
+    std::string sceneName = "renderer";
+    if(!selectedScene.empty()){
+        if(selectedScene == "medium")
+            sceneName = "medium";
+        else if (selectedScene == "renderer")
+            sceneName = "renderer";
+        else{
+            Logger::log(LOG_LEVEL_ERROR, "Invalid scene!");
+                exit(EXIT_FAILURE);
+        }
+    }
+
+    if (sceneName == "medium") {
         ParticipatingMediumScene mediumScene{"Participating medium playground", static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
         mediumScene.render();
     }
-    else if (selectedScene == "renderer") {
+    else if (sceneName == "renderer") {
 #ifdef CLOUD_RENDER_SUBSAMPLE
         std::cout << "Using subsampling when rendering clouds, note this is na experimental feature" << std::endl;
 #endif
@@ -35,7 +52,36 @@ int main(int argc, char * argv[]) {
         std::cout << "Using high fidelity clouds. This is recommended only for powerfull GPUs" << std::endl;
 #endif
 
-        Renderer renderer{width, height};
+        WeatherMap weatherMapEnum = WeatherMap::Stratocumulus;
+        TerrainType terrainEnum = TerrainType::Default;
+
+        if(!weatherMap.empty()){
+            if(weatherMap == "stratus")
+                weatherMapEnum = WeatherMap::Stratus;
+            else if(weatherMap == "stratocumulus")
+                weatherMapEnum = WeatherMap::Stratocumulus;
+            else if(weatherMap == "cumulus")
+                weatherMapEnum = WeatherMap::Cumulus;
+            else if(weatherMap == "nubis")
+                weatherMapEnum = WeatherMap::Nubis;
+            else{
+                Logger::log(LOG_LEVEL_ERROR, "Invalid weather map!");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        if(!terrain.empty()){
+            if(terrain == "default")
+                terrainEnum = TerrainType::Default;
+            else if (terrain == "mountain")
+                terrainEnum = TerrainType::Mountain;
+            else {
+                Logger::log(LOG_LEVEL_ERROR, "Invalid terrain!");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        Renderer renderer{width, height, weatherMapEnum, terrainEnum};
         renderer.render();
         auto benchmarkResult = renderer.getBenchmarkResult();
         std::cout << "-- PROFILER RESULTS --" << std::endl;

@@ -136,7 +136,7 @@ void Renderer::destroySyncObjects() {
 }
 
 void Renderer::prepareGeometry() {
-    Loader(geometry, device, resourceManager).loadglTF(ASSET_PATH("terrain.glb"));
+    Loader(geometry, device, resourceManager).loadglTF(terrainType == TerrainType::Default? ASSET_PATH("terrain.glb") : ASSET_PATH("mountain.glb"));
 
     ASSERT(!geometry.vertices.empty(), "No vertices loaded!");
 
@@ -630,14 +630,15 @@ void Renderer::handleInput() {
         camera.position += camera.upDirection() * movementSpeed * deltaTime;
 }
 
-Renderer::Renderer(const int32_t width, const int32_t height)
+Renderer::Renderer(const int32_t width, const int32_t height, WeatherMap weatherMap, TerrainType terrainType)
     : window{instance, "Vulkan atmospheric renderer", static_cast<int>(width), static_cast<int>(height)},
       device{instance, window.getSurface()}, resourceManager{device}, frameManager{window, device}, profiler{device, 12},
       lWidth{static_cast<uint32_t>(width)}, lHeight{static_cast<uint32_t>(height)}, depthPass(device, resourceManager, profiler, geometry),
-      geometryPass(device, resourceManager, profiler, geometry), cloudsPass(device, resourceManager, profiler),
+      geometryPass(device, resourceManager, profiler, geometry), cloudsPass(device, resourceManager, profiler, weatherMap),
       atmospherePass(device, resourceManager, profiler),
       godRaysPass(device, resourceManager, profiler),
-      compositionPass(device, resourceManager, profiler), postProcessingPass(device, resourceManager, profiler) {
+      compositionPass(device, resourceManager, profiler), postProcessingPass(device, resourceManager, profiler),
+      weatherMap(weatherMap), terrainType(terrainType) {
     // Initialize the descriptor pool object from which descriptors will be allocated
     descriptorPool = DescriptorPool::Builder(device)
             .setMaxSets(20000)
