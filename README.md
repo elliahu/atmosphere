@@ -1,4 +1,7 @@
-# Atmosphere renderer by Matěj Eliáš
+# Atmosphere renderer
+![Result](img/hero.png)
+
+
 This `README.md` is here to help you to:
 - Compile and run the code in this repository
 - Understand how to navigate the code
@@ -19,7 +22,7 @@ The atmosphere renderer uses [my own Vulkan engine/wrapper](https://github.com/e
 This is te **required** build environment:
 - **Python** (any relevant version) is required as it is used to compile shader using `slangc` compiler that comes with Vulkan SDK. Simple python script has to be run to transpile the shader into SPIR-V format that is used by Vulkan. This is further explained in the Running section.
 - **Vulkan SDK** version 1.3.296 or newer as noted above, please read.
-- **MinGW-w64** version 11.w64 or newer or any toolset that uses `gcc` and `g++` compilers. You can get it from [MSYS2](https://www.msys2.org/), [Winlibs](https://winlibs.com/) or if on Linux, it should be available in your package manager
+- **MinGW-w64** version 11.w64 or newer or any toolset that uses `gcc` and `g++` compilers. You can get it from [MSYS2](https://www.msys2.org/), [Winlibs](https://winlibs.com/) or if on Linux, it should be available in your package manager. On Windows [MSYS2](https://www.msys2.org/) is the easiest and recommended way. You can follow a tutorial [hre](https://code.visualstudio.com/docs/cpp/config-mingw#_installing-the-mingww64-toolchain). On Linux you can use apt, see bellow.
 - **CMake** version 3.29 or newer available [here](https://cmake.org/download/) or if on Linux, in your package manager
 - **Ninja-build** as a build tool for CMake available [here](https://ninja-build.org/) or if on Linux, in your package manager
 
@@ -151,3 +154,17 @@ This means that you did not compile the shaders. Please read the Run section aga
 ### terminate called after throwing an instance of 'std::invalid_argument' what():  Argument value is missing: scene
 
 This means that you did not specify an argument that is required. Please read the Run section again. It could also mean your cwd is wrong. Make sure you are launching the app from within the build directory.
+
+# Gallery
+![One](img/polojasno.png)
+![Two](img/lightshafts_on.png)
+![Three](img/aerial_perspective.png)
+![Four](img/lighthafts_result.png)
+![Five](img/covered_sky.png)
+
+# References
+- [The Real-time Volumetric Cloudscapes of Horizon Zero Dawn](https://advances.realtimerendering.com/s2015/The%20Real-time%20Volumetric%20Cloudscapes%20of%20Horizon%20-%20Zero%20Dawn%20-%20ARTR.pdf)
+- [Physically Based Sky, Atmosphere and Cloud Rendering in Frostbite](https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2016-pbs-frostbite-sky-clouds-new.pdf)
+- [Nubis: Authoring Real-Time Volumetric Cloudscapes with the Decima Engine](https://drive.google.com/file/d/0B-D275g6LH7LOE1RcVFERGpkS28/view?resourcekey=0-P04mYcVQ1lDPdn7FDunEIw)
+- [A Scalable and Production Ready Sky and Atmosphere Rendering Technique](https://sebh.github.io/publications/egsr2020.pdf)
+- [Volumetric Light Scattering as a Post-Process](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process)
