@@ -1,4 +1,6 @@
 # Atmosphere renderer
+This is an implementation of a complete atmospheric model and renderer with support of multiple scattering approximation that gives the sky its specific sky-blue color, sun transmittance, aerial-perspective, soft shadows, dynamic time of day, dynamic volumetric clouds with variable sizes, types and coverage and screen space god rays approximation. This code is a part of my masters thesis called 'Realistic atmosphere rendering'.
+
 ![Result](img/hero.png)
 
 
