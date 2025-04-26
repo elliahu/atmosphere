@@ -690,6 +690,18 @@ namespace Surfer {
             if (key == VK_LEFT) return KeyCode::ArrowLeft;
             if (key == VK_RIGHT) return KeyCode::ArrowRight;
 
+            // Spacebar
+            if (key == VK_SPACE) return KeyCode::Space;
+
+            // Shift (either left or right)
+            if (key == VK_SHIFT) {
+                if (key == VK_LSHIFT)
+                    return KeyCode::LeftShift;
+                if (key == VK_RSHIFT)
+                    return KeyCode::RightShift;
+                return KeyCode::LeftShift;
+            }
+
 
             return KeyCode::UnsupportedKey;
         }
