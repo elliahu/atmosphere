@@ -49,21 +49,7 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc.e
 ```
 You should se output similar to this:
 ```txt
--- The C compiler identification is GNU 14.2.0
--- The CXX compiler identification is GNU 14.2.0
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: C:/msys64/ucrt64/bin/gcc.exe - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: C:/msys64/ucrt64/bin/g++.exe - skipped
--- Detecting CXX compile features
--- Detecting CXX compile features - done
--- Found Vulkan: C:/VulkanSDK/1.4.309.0/Lib/vulkan-1.lib (found version "1.4.309") found components: glslc glslangValidator
--- Configuring done (1.9s)
--- Generating done (0.1s)
+...
 -- Build files have been written to: C:/Users/matej/CLionProjects/atmosphere/build
 ```
 Here it should correctly find the `gcc` and `g++` compilers and Vulkan SDK. 
@@ -75,7 +61,7 @@ cmake --build build
 You should see output similar to this:
 
 ```txt
-... bunch of warnings
+... bunch of warnings from the hammock library
 [88/88] Linking CXX executable app.exe
 ```
 If you have troubles building, see Troubleshooting section bellow
@@ -84,9 +70,24 @@ If you have troubles building, see Troubleshooting section bellow
 Here the situation is the same except it is easier to install the build tools.
 Make sure your **cwd** is the root of the project. Then run the following command:
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc.exe -DCMAKE_CXX_COMPILER=g++.exe
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
 ```
+You should se output similar to this:
+```txt
+...
+-- Build files have been written to: C:/Users/matej/CLionProjects/atmosphere/build
+```
+Then to generate the executable, run this:
+```bash
+cmake --build build
+```
+You should see output similar to this:
 
+```txt
+... bunch of warnings from the hammock library
+[44/44] Linking CXX executable app
+```
+If you have troubles building, see Troubleshooting section bellow
 
 ## Running
 First of all, shaders need to be compiled using the `compile_shaders.py` script. Run the following command:
