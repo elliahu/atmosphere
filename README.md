@@ -47,7 +47,7 @@ sudo apt install cmake ninja-build build-essential
 ### Windows
 Make sure your **cwd** is the root of the project. Then run the following command:
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc.exe -DCMAKE_CXX_COMPILER=g++.exe
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="gcc.exe" -DCMAKE_CXX_COMPILER="g++.exe"
 ```
 You should se output similar to this:
 ```txt
