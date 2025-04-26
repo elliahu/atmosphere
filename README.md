@@ -134,7 +134,22 @@ Present mode: Mailbox
 ```
 This will differ based on your system but it should display your GPU, and select the best present mode for your OS and GPU. If you ses that present mode is FIFO, that means a V-Sync was selected as a fallback option and your FPS will be limited to the sync interval of your display, possibly 60hz. If you see any debug messages in the console that starts like `DEBUG: ...` then you are running the app in the debug mode and you need to reconfigure and recompile using the `-DCMAKE_BUILD_TYPE=Release` option.
 
-## Troubleshooting
+## Controls
+Once the atmosphere renderer is launched, you can play around. 
+- **To update values in number inputs, you need to click and drag left or right** 
+- Movement: Using W,A,S,D to fly around, SPACE to fly up and LSHIFT to fly down. You can also adjust precise camera position using the camera options window in `Options -> Camera options`
+- What each option in each window does is described in the thesis's appendix
+
+
+
+# Gallery
+![One](img/polojasno.png)
+![Two](img/lightshafts_on.png)
+![Three](img/aerial_perspective.png)
+![Four](img/lighthafts_result.png)
+![Five](img/covered_sky.png)
+
+# Troubleshooting
 This might help you if something doesn't work
 
 ### 'cmake' is not recognized as an internal or external command, operable program or batch file.
@@ -158,16 +173,10 @@ This means that you did not compile the shaders. Please read the Run section aga
 
 This means that you did not specify an argument that is required. Please read the Run section again. It could also mean your cwd is wrong. Make sure you are launching the app from within the build directory.
 
-# Gallery
-![One](img/polojasno.png)
-![Two](img/lightshafts_on.png)
-![Three](img/aerial_perspective.png)
-![Four](img/lighthafts_result.png)
-![Five](img/covered_sky.png)
-
 # References
 - [The Real-time Volumetric Cloudscapes of Horizon Zero Dawn](https://advances.realtimerendering.com/s2015/The%20Real-time%20Volumetric%20Cloudscapes%20of%20Horizon%20-%20Zero%20Dawn%20-%20ARTR.pdf)
 - [Physically Based Sky, Atmosphere and Cloud Rendering in Frostbite](https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2016-pbs-frostbite-sky-clouds-new.pdf)
 - [Nubis: Authoring Real-Time Volumetric Cloudscapes with the Decima Engine](https://drive.google.com/file/d/0B-D275g6LH7LOE1RcVFERGpkS28/view?resourcekey=0-P04mYcVQ1lDPdn7FDunEIw)
 - [A Scalable and Production Ready Sky and Atmosphere Rendering Technique](https://sebh.github.io/publications/egsr2020.pdf)
 - [Volumetric Light Scattering as a Post-Process](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process)
+

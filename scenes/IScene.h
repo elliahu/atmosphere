@@ -45,10 +45,10 @@ public:
     virtual void render() = 0;
 
     static std::string assetPath(const std::string &asset) {
-        return "../../../data/" + asset;
+        return "../assets/" + asset;
     }
 
     static std::string compiledShaderPath(const std::string &shader) {
-        return "../../../examples/cloud_renderer/spv/" + shader + ".spv";
+        return "../spv/" + shader + ".spv";
     }
 };

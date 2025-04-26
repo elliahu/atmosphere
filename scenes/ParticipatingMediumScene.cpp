@@ -4,7 +4,7 @@
 void ParticipatingMediumScene::init() {
     // Load the SDF from the disk
     int32_t grid = 258;
-    ScopedMemory sdfData(SignedDistanceField().loadFromFile(assetPath("sdf/dragon"), grid).data());
+    ScopedMemory sdfData(SignedDistanceField().loadFromFile(assetPath("dragon"), grid).data());
 
     // Create the staging buffer
     ResourceHandle sdfStagingBuffer = rm.createResource<Buffer>(
@@ -43,7 +43,7 @@ void ParticipatingMediumScene::init() {
 
     // Load the 3D noise from the disk
     int w, h, c, d;
-    ScopedMemory densityNoiseData(readVolume(Filesystem::ls(assetPath("noise/base")), w, h, c, d,
+    ScopedMemory densityNoiseData(readVolume(Filesystem::ls(assetPath("base")), w, h, c, d,
                                              Filesystem::ImageFormat::R16G16B16A16_SFLOAT));
 
     // Create the staging buffer
@@ -82,7 +82,7 @@ void ParticipatingMediumScene::init() {
     rm.releaseResource(densityNoiseStagingBuffer.getUid());
 
     // Load the curl noise, we don't require any precision here so 8 bits is ok
-    ScopedMemory curlNoiseData(readImage(assetPath("noise/curlNoise.png"), w, h, c,
+    ScopedMemory curlNoiseData(readImage(assetPath("curlNoise.png"), w, h, c,
                                          Filesystem::ImageFormat::R8G8B8A8_UNORM));
 
     // Create host visible staging buffer on device
@@ -122,7 +122,7 @@ void ParticipatingMediumScene::init() {
     // Release the staging buffer
     rm.releaseResource(curlNoiseStagingBuffer.getUid());
 
-    ScopedMemory blueNoiseData(readImage(assetPath("noise/blue_noise.png"), w, h, c,
+    ScopedMemory blueNoiseData(readImage(assetPath("blue_noise.png"), w, h, c,
                                          Filesystem::ImageFormat::R8G8B8A8_UNORM));
 
     // Create host visible staging buffer on device
