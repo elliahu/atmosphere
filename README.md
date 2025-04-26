@@ -114,19 +114,24 @@ After shaders are compiled, you can run the built executable like this:
 Windows:
 ```bash
 cd build
-app.exe --width 1920 --height 1080 --scene renderer
+app.exe --width 1920 --height 1080
 ```
 
 Linux:
 ```bash
 cd build
-./app --width 1920 --height 1080 --scene renderer
+./app --width 1920 --height 1080
 ```
 
-Required options:
+**Required arguments:**
 - `--width <value>` horizontal resolution
 - `--height <value>` vertical resolution
+
+**Optional arguments:**
+- `--weather <stratus|stratocumulus|cumulus|nubis>` selected weather map that is to be loaded. Stratocumulus is default. Note that for some cloud types, absorption value has to be adjusted (eg. stratus naturally has higher absorption than the default value)
+- `--terrain <default|mountain>` selected terrain model to be loaded. Default is somewhat flat terrain with small hills. Mountain is model with single giant mountain.
 - `--scene <renderer|medium>` selected scene, cane be one of `renderer` for complete atmospheric renderer or `medium` fro the scene with the Stanford dragon from the theoretical section of the thesis
+
 
 You should see an output that looks like this:
 ```txt
