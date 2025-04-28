@@ -7,10 +7,7 @@ import toolbox;
 
 #define NUM_SAMPLES 30            
 
-void marchStep(
-    float phaseU, float3 ori, float3 dir, float thisT, float nextT,
-    inout float3 sumSigmaT, inout float3 inScattering)
-{
+void marchStep(float phaseU, float3 ori, float3 dir, float thisT, float nextT, inout float3 sumSigmaT, inout float3 inScattering){
     float midT = 0.5 * (thisT + nextT);
     float3 posR = float3(0, ori.y + PlanetRadius, 0) + dir * midT;
     float h = length(posR) - PlanetRadius;
@@ -38,12 +35,10 @@ void marchStep(
 
 [shader("compute")]
 [numthreads(8, 8, 1)]
-void computeMain(int3 threadIdx : SV_DispatchThreadID)
-{
+void computeMain(int3 threadIdx : SV_DispatchThreadID){
     int width, height;
     SkyView.GetDimensions(width, height);
-    if(threadIdx.x >= width || threadIdx.y >= height)
-        return;
+    if(threadIdx.x >= width || threadIdx.y >= height) return;
     
     float2 texCoord = float2((threadIdx.x + 0.5) / width, (threadIdx.y + 0.5) / height);
     
@@ -62,9 +57,8 @@ void computeMain(int3 threadIdx : SV_DispatchThreadID)
     
     // Find intersection
     float endT = 0;
-    if(!findClosestIntersectionWithCircle(planetOri, planetDir, PlanetRadius, endT))
-    {
-        findClosestIntersectionWithCircle(planetOri, planetDir, AtmosphereRadius, endT);
+    if (!intersectRayCircle(planetOri, planetDir, PlanetRadius, endT)) {
+        intersectRayCircle(planetOri, planetDir, AtmosphereRadius, endT);
     }
     
     float phaseU = dot(params.SunDirection.xyz, -dir);
@@ -75,8 +69,7 @@ void computeMain(int3 threadIdx : SV_DispatchThreadID)
     
     // Compute sky color for this pixel by raymarching along the ray
     float dt = (endT - t) / NUM_SAMPLES;
-    for (int i = 0; i < NUM_SAMPLES; ++i)
-    {
+    for (int i = 0; i < NUM_SAMPLES; ++i){
         float nextT = t + dt;
         marchStep(phaseU, ori, dir, t, nextT, sumSigmaT, inScatter);
         t = nextT;

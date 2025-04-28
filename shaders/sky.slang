@@ -28,11 +28,9 @@ VertexOutput vertexMain(uint vertexID : SV_VertexID) {
 // Pseudo random post process that hides ugly banding and makes the result look natural
 float3 postProcessColor(float2 seed, float3 input)
 {
-    float rand = frac(sin(dot(
-        seed, float2(12.9898, 78.233) * 2.0)) * 43758.5453);
+    float rand = frac(sin(dot(seed, float2(12.9898, 78.233) * 2.0)) * 43758.5453);
     input = 255 * saturate(pow(input, 1));
     input = rand.xxx < (input - floor(input)) ? ceil(input) : floor(input);
-
     return input / 255;
 }
 

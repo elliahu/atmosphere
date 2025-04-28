@@ -189,7 +189,6 @@ float isophase() {
 }
 
 // RAYCASTING
-// Ray - AABB intersection test
 float2 intersectRayAABB(float3 rayOrigin, float3 rayDir, float3 aabbMin, float3 aabbMax) {
     float3 tMin = (aabbMin - rayOrigin) / rayDir;
     float3 tMax = (aabbMax - rayOrigin) / rayDir;
@@ -201,13 +200,11 @@ float2 intersectRayAABB(float3 rayOrigin, float3 rayDir, float3 aabbMin, float3 
     return float2(tEnter, tExit);
 }
 
-// Ray - Sphere intersection test
-float2 intersectRaySphere(float3 center, float radius, float3 origin, float3 direction) {
-    float3 offset = origin - center;
+float2 intersectRaySphere(float3 c, float r, float3 o, float3 d) {
+    float3 of = o - c;
     const float a = 1.0;
-    float b = 2.0 * dot(offset, direction);
-    float c = dot(offset, offset) - radius * radius;
-
+    float b = 2.0 * dot(of, d);
+    float c = dot(of, of) - r * r;
     float discriminant = b * b - 4.0 * a * c;
 
     if (discriminant > 0) {
@@ -222,8 +219,7 @@ float2 intersectRaySphere(float3 center, float radius, float3 origin, float3 dir
     return float2(0.0, 0.0);
 }
 
-// Ray - Circle intersection test
-bool hasIntersectionWithCiecle(float2 o, float2 d, float R){
+bool existsRayCircleIntersection(float2 o, float2 d, float R){
     float A = dot(d, d);
     float B = 2 * dot(o, d);
     float C = dot(o, o) - R * R;
@@ -231,8 +227,7 @@ bool hasIntersectionWithCiecle(float2 o, float2 d, float R){
     return (delta >= 0) && ((C <= 0) | (B <= 0));
 }
 
-// Ray - Sphere intersection test
-bool hasIntersectionWithSphere(float3 o, float3 d, float R){
+bool existsRaySphereIntersection(float3 o, float3 d, float R){
     float A = dot(d, d);
     float B = 2 * dot(o, d);
     float C = dot(o, o) - R * R;
@@ -240,8 +235,7 @@ bool hasIntersectionWithSphere(float3 o, float3 d, float R){
     return (delta >= 0) && ((C <= 0) | (B <= 0));
 }
 
-// Ray - Circle intersection test
-bool findClosestIntersectionWithCircle(float2 o, float2 d, float R, out float t){
+bool intersectRayCircle(float2 o, float2 d, float R, out float t){
     float A = dot(d, d);
     float B = 2 * dot(o, d);
     float C = dot(o, o) - R * R;
@@ -252,8 +246,7 @@ bool findClosestIntersectionWithCircle(float2 o, float2 d, float R, out float t)
     return (C <= 0) | (B <= 0);
 }
 
-// Ray - Sphere intersection test
-bool findClosestIntersectionWithSphere(float3 o, float3 d, float R, out float t){
+bool intersectRaySphere(float3 o, float3 d, float R, out float t){
     float A = dot(d, d);
     float B = 2 * dot(o, d);
     float C = dot(o, o) - R * R;

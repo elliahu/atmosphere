@@ -26,8 +26,7 @@ void computeMain(int3 threadIdx : SV_DispatchThreadID)
     // Validate dimensions
     int width, height, depth;
     aerialPerspective.GetDimensions(width, height, depth);
-    if(threadIdx.x >= width || threadIdx.y >= height)
-        return;
+    if(threadIdx.x >= width || threadIdx.y >= height) return;
 
     // get uv coords
     float xf = (threadIdx.x + 0.5) / width;
@@ -45,30 +44,27 @@ void computeMain(int3 threadIdx : SV_DispatchThreadID)
 
     // How far
     float maxT = 0;
-    if(!findClosestIntersectionWithSphere(ori + float3(0, PlanetRadius, 0), dir, PlanetRadius, maxT))
-    {
-        findClosestIntersectionWithSphere(ori + float3(0, PlanetRadius, 0), dir, AtmosphereRadius, maxT);
+    if (!intersectRaySphere(ori + float3(0, PlanetRadius, 0), dir, PlanetRadius, maxT)) {
+        intersectRaySphere(ori + float3(0, PlanetRadius, 0), dir, AtmosphereRadius, maxT);
     }
 
     float sliceDepth = MaxDistance / depth;
     float halfSliceDepth = 0.5 * sliceDepth;
-    float tBeg = 0, tEnd = min(halfSliceDepth, maxT);
+    float tBeg = 0;
+    float tEnd = min(halfSliceDepth, maxT);
 
     float3 sumSigmaT = float3(0, 0, 0);
     float3 inScatter = float3(0, 0, 0);
 
     // Dithering, simple but effective
-    float rand = frac(sin(dot(
-        float2(xf, yf), float2(12.9898, 78.233) * 2.0)) * 43758.5453);
+    float rand = frac(sin(dot(float2(xf, yf), float2(12.9898, 78.233) * 2.0)) * 43758.5453);
 
     // For each slice, compute the in scattered light and transmittance
-    for(int z = 0; z < depth; ++z)
-    {
+    for(int z = 0; z < depth; ++z){
         float dt = (tEnd - tBeg) / PER_SLICE_SAMPLES;
         float t = tBeg;
 
-        for(int i = 0; i < PER_SLICE_SAMPLES; ++i)
-        {
+        for(int i = 0; i < PER_SLICE_SAMPLES; ++i){
             float nextT = t + dt;
 
             float  midT = lerp(t, nextT, rand);
@@ -83,23 +79,20 @@ void computeMain(int3 threadIdx : SV_DispatchThreadID)
             float3 deltaSumSigmaT = dt * sigmaT;
             float3 eyeTrans = exp(-sumSigmaT - 0.5 * deltaSumSigmaT);
 
-            if(!hasIntersectionWithSphere(posR, params.SunDirection.xyz, PlanetRadius))
-            {
+            if (!existsRaySphereIntersection(posR, params.SunDirection.xyz, PlanetRadius)){
                 float3 shadowPos  = params.Eye.xyz + dir * midT / WorldScale;
                 float4 shadowClip = mul(params.ShadowViewProj, float4(shadowPos, 1.0));
                 float3 shadowNDC  = shadowClip.xyz / shadowClip.w;
                 float2 shadowUV = shadowNDC.xy * 0.5 + 0.5;
 
                 bool inShadow = true;
-                if(all(saturate(shadowUV) == shadowUV))
-                {
+                if(all(saturate(shadowUV) == shadowUV)){
                     float rayZ = shadowClip.z;
                     float smZ = shadowMap.SampleLevel(shadowUV, 0.0).r;
                     inShadow = rayZ >= smZ;
                 }
 
-                if(!inShadow)
-                {
+                if(!inShadow){
                     float3 rho = evalPhaseFunction(h, u);
                     float3 sunTrans = getTransmittance(Transmittance, h, SunTheta);
                     inScatter += dt * eyeTrans * sigmaS * rho * sunTrans;
@@ -111,7 +104,6 @@ void computeMain(int3 threadIdx : SV_DispatchThreadID)
             float3 ms = multipleScattering.SampleLevel( float2(tx, ty), 0).rgb;
             inScatter += dt * eyeTrans * sigmaS * ms;
             
-
             sumSigmaT += deltaSumSigmaT;
             t = nextT;
         }

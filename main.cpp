@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <hammock/hammock.h>
 
-#include "scenes/ParticipatingMediumScene.h"
+#include "medium/ParticipatingMediumScene.h"
 #include "renderer/Renderer.h"
 
 using namespace hammock;

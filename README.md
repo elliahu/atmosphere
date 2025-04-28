@@ -1,32 +1,42 @@
 # Atmosphere renderer
-This is an implementation of a complete atmospheric model and renderer with support of multiple scattering approximation that gives the sky its specific sky-blue color, sun transmittance, aerial-perspective, soft shadows, dynamic time of day, dynamic volumetric clouds with variable sizes, types and coverage and screen space god rays approximation. This code is a part of my masters thesis called 'Realistic atmosphere rendering'.
+This is an implementation of a complete atmospheric model and renderer with support of multiple scattering approximation that gives the sky its specific sky-blue color, sun transmittance, aerial-perspective, soft shadows, dynamic time of day, dynamic volumetric clouds with variable sizes, types and coverage and screen space god rays approximation. All that and more **running under 1.5 ms** on RTX 4080. This code is a part of my masters thesis called 'Realistic atmosphere rendering'.
 
 ![Result](img/hero.png)
 
+**Visit [gallery](#gallery) for more images. Visit [performance](#performance) for benchmark results.**
 
 This `README.md` is here to help you to:
 - Compile and run the code in this repository
 - Understand how to navigate the code
 - Understand how to use the atmospheric renderer
 
-Please make sure to follow these steps exactly as these were tested to be working on multiple Windows and Linux machines. If there are any issues, feel free to reach out. 
+Please make sure to follow these steps **exactly** as these were tested to be working on multiple Windows and Linux machines. If there are any issues, feel free to reach out. 
 
-**MacOS unfortunately is not supported**
+**MacOS unfortunately is not supported.** For macos support (via Molten VK), a window system supporting Metal needs to be added replacing the current one that uses my own header-only [VulkanSurfer](https://github.com/elliahu/VulkanSurfer) library.
 
 
 
 # Building
+This section should help you build the codebase.
+
+## TL;DR
+- `gcc` and `g++` compilers are **required** (may not compile using `msvc` or `clang`).
+- CMake with Ninja is recommended for building. 
+- Vulkan SDK required as the only dependency. 
+- Python required to run shader compilation script.
+  
+If you are developing on Linux or use Clion and its default configuration on Windows, this should already match. Detailed per OS instructions follow:
 
 ## Vulkan SDK required
 The atmosphere renderer uses [my own Vulkan engine/wrapper](https://github.com/elliahu/hammock) called **hammock**. That means Vulkan SDK version 1.3.296 or newer is **required**. Recommended version that was used during a benchmark is 1.4.309. You can download Vulkan SDK installer from official [LunarG](https://vulkan.lunarg.com/sdk/home) repository. If you already have Vulkan SDK, the installation will install new version alongside the old version and update the PATH to point to the new version so there should be no problem. You can safely delete the old directory containing the old SDK.
 
-**After the installation, make sure VULKAN_SDK environment variable is present.** It may look like this on Windows: `C:\VulkanSDK\1.4.309.0` and on Linux
+**After the installation, make sure VULKAN_SDK environment variable is present.** It may look like this on Windows: `C:\VulkanSDK\1.4.309.0`. Also, to verify Vulkan SDK installation, you can run `vulkaninfo` command, which will print auto long info about your Vulkan install that at the top of the list contains warnings (if there are any problems) and also the current SDK version that should match the installed version. Then to be sure that you can actually run Vulkan apps, you can run `vkcube` command, which will open a small window with a spinning cube textured as LunarG logo.
 
 ### Setup
 This is te **required** build environment:
 - **Python** (any relevant version) is required as it is used to compile shader using `slangc` compiler that comes with Vulkan SDK. Simple python script has to be run to transpile the shader into SPIR-V format that is used by Vulkan. This is further explained in the Running section.
 - **Vulkan SDK** version 1.3.296 or newer as noted above, please read.
-- **MinGW-w64** version 11.w64 or newer or any toolset that uses `gcc` and `g++` compilers. You can get it from [MSYS2](https://www.msys2.org/), [Winlibs](https://winlibs.com/) or if on Linux, it should be available in your package manager. On Windows [MSYS2](https://www.msys2.org/) is the easiest and recommended way. You can follow a tutorial [hre](https://code.visualstudio.com/docs/cpp/config-mingw#_installing-the-mingww64-toolchain). On Linux you can use apt, see bellow.
+- **MinGW-w64** version 11.w64 or newer or any toolset that uses `gcc` and `g++` compilers. You can get it from [MSYS2](https://www.msys2.org/), [Winlibs](https://winlibs.com/) or if on Linux, it should be available in your package manager. On Windows [MSYS2](https://www.msys2.org/) is the easiest and recommended way. You can follow a 7 step tutorial [here](https://code.visualstudio.com/docs/cpp/config-mingw#_installing-the-mingww64-toolchain). On Linux you can use apt, see bellow.
 - **CMake** version 3.29 or newer available [here](https://cmake.org/download/) or if on Linux, in your package manager
 - **Ninja-build** as a build tool for CMake available [here](https://ninja-build.org/) or if on Linux, in your package manager
 
@@ -91,6 +101,14 @@ You should see output similar to this:
 ```
 If you have troubles building, see Troubleshooting section bellow
 
+## Customized (low-end, high-end) builds
+If you are running the code on a low-end hardware (eg. laptop with integrated GPU), you can define a `CLOUD_RENDER_SUBSAMPLE` macro (eg. by uncommenting line in `CMakeLists.txt` at the bottom and rebuilding, or adding `-D CMAKE_CXX_FLAGS="-DCLOUD_RENDER_SUBSAMPLE"` option to the configuration command). This will significantly improve performance by only updating every 16th pixel each frame but it comes at a cost of ghosting clouds.
+
+If you are running the code on a high-end hardware, you can define a `HIGH_QUALITY_CLOUDS` macro (eg. by uncommenting line in `CMakeLists.txt` at the bottom and rebuilding, or adding `-D CMAKE_CXX_FLAGS="-HIGH_QUALITY_CLOUDS"` option to the configuration command). This will render clouds at higher fidelity settings used for captures. The rendering will than become much more GPU power demanding.
+
+Both options adjust cloud rendering as it is the heaviest operation of the whole atmosphere rendering.
+
+
 # Running
 First of all, shaders need to be compiled using the `compile_shaders.py` script. Run the following command:
 ```bash
@@ -111,6 +129,7 @@ OK
 This needs to be run initially and anytime shaders are changed. So if you make changes to the shaders, you need to rerun the command above. This will generate `spirv` directory containing bunch of `.spv` files.
 
 After shaders are compiled, you can run the built executable like this:
+
 Windows:
 ```bash
 cd build
@@ -139,7 +158,7 @@ Device count: 1
 physical device: NVIDIA GeForce RTX 2060
 Present mode: Mailbox
 ```
-This will differ based on your system but it should display your GPU, and select the best present mode for your OS and GPU. If you ses that present mode is FIFO, that means a V-Sync was selected as a fallback option and your FPS will be limited to the sync interval of your display, possibly 60hz. If you see any debug messages in the console that starts like `DEBUG: ...` then you are running the app in the debug mode and you need to reconfigure and recompile using the `-DCMAKE_BUILD_TYPE=Release` option.
+This will differ based on your system but it should display your GPU, and select the best present mode based on your driver and display. If you see that present mode is V-Sync (or V-Sync relaxed), that means a V-Sync was selected as a fallback option and your FPS will be limited to the sync interval of your display, possibly 60hz. If you see any debug messages in the console that starts like `DEBUG: ...` then you are running the app in the debug mode and you need to reconfigure and recompile using the `-DCMAKE_BUILD_TYPE=Release` option.
 
 # Controls
 Once the atmosphere renderer is launched, you can play around. 
@@ -152,7 +171,7 @@ Once the atmosphere renderer is launched, you can play around.
 - `hammock` contains the Vulkan engine/wrapper used to build the renderer
 - `img` contains some screenshots
 - `renderer` contains source code of the actual atmosphere renderer
-- `scenes` contains the Participating medium scene playground scene where you can play around with a participating media rendering parameters. Note this scene is not part of the renderer and as such is not optimized and may not even be stable
+- `medium` contains the Participating medium scene playground scene where you can play around with a participating media rendering parameters. Note this scene is not part of the renderer and as such is not optimized and may not even be stable
 - `shaders` contains Slang shaders
 
 If you would like to use different weather map than possible by params, you can change the loaded file in the `renderer/clouds/CloudPass.cpp` file in function `CloudsPass::prepareResources()`:
@@ -162,6 +181,21 @@ AutoDelete weatherMapData(
             delete[] static_cast<const uchar8_t *>(p);
 });
 ```
+
+# Performance
+|                         | RTX 2060 | RTX 3060 | **RTX 4080** |
+|-------------------------|----------|----------|-------------|
+| Clouds               | 3.421 ms | 3.008 ms | **0.755 ms** |
+| Transmittance LUT         | 0.141 ms | 0.127 ms | **0.034 ms** |
+| Multiple scattering LUT  | 0.414 ms | 0.371 ms | **0.259 ms** |
+| Sky View LUT              | 0.026 ms | 0.024 ms | **0.010 ms** |
+| Aerial perspective LUT   | 0.095 ms | 0.097 ms | **0.080 ms** |
+| Occlusion mask         | 0.631 ms | 0.615 ms | **0.161 ms** |
+| Radial blur         | 0.154 ms | 0.150 ms | **0.040 ms** |
+| Sky View LUT up-sample | 0.081 ms | 0.076 ms | **0.020 ms** |
+| Composition               | 0.174 ms | 0.128 ms | **0.032 ms** |
+| Postprocessing          | 0.069 ms | 0.069 ms | **0.017 ms** |
+| **Total frame (with terrain)**       | 6.438 ms | 5.758 ms | **1.773 ms** |
 
 # Gallery
 ![One](img/polojasno.png)

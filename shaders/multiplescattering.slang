@@ -36,20 +36,15 @@ float3 uniformSampleSphere(uint i, uint N){
 }
 
 // Analytical integration as proposed by Sébastien Hillaire (or rather based on his proposal)
-void integrate(
-    float3 worldOri, float3 worldDir, float sunTheta, float3 toSunDir,
-    out float3 innerL2, out float3 innerF)
-{
+void integrate(float3 worldOri, float3 worldDir, float sunTheta, float3 toSunDir, out float3 innerL2, out float3 innerF){
     // cos sun dot ray
     float u = dot(worldDir, toSunDir);
 
+    // Find the intersection with the planet and atmosphere spheres
     float endT = 0;
-    bool groundInct = findClosestIntersectionWithSphere(
-        worldOri, worldDir, PlanetRadius, endT);
-    if(!groundInct)
-    {
-        findClosestIntersectionWithSphere(
-            worldOri, worldDir, AtmosphereRadius, endT);
+    bool groundInct = intersectRaySphere(worldOri, worldDir, PlanetRadius, endT);
+    if (!groundInct) {
+        intersectRaySphere(worldOri, worldDir, AtmosphereRadius, endT);
     }
 
     float dt = endT / RAYMARCH_STEP_COUNT;
@@ -58,9 +53,9 @@ void integrate(
 
     float3 sumSigmaT = float3(0, 0, 0);
 
-    float3 sumL2 = float3(0, 0, 0), sumF = float3(0, 0, 0);
-    for(int i = 0; i < RAYMARCH_STEP_COUNT; ++i)
-    {
+    float3 sumL2 = float3(0, 0, 0);
+    float3 sumF = float3(0, 0, 0);
+    for(int i = 0; i < RAYMARCH_STEP_COUNT; ++i){
         float midT = t + halfDt;
         t += dt;
 
@@ -73,26 +68,22 @@ void integrate(
         float3 deltaSumSigmaT = dt * sigmaT;
         float3 transmittance = exp(-sumSigmaT - 0.5 * deltaSumSigmaT);
 
-        if(!hasIntersectionWithSphere(worldPos, toSunDir, PlanetRadius))
-        {
+        if (!existsRaySphereIntersection(worldPos, toSunDir, PlanetRadius)){
             float3 rho = evalPhaseFunction(h, u);
             float3 sunTransmittance = getTransmittance(Transmittance, h, sunTheta);
 
             // Second order scattering
-            sumL2 += dt * transmittance * sunTransmittance * sigmaS *
-                     rho * SunIntensity;
+            sumL2 += dt * transmittance * sunTransmittance * sigmaS * rho * SunIntensity;
         }
 
-        sumF      += dt * transmittance * sigmaS;
+        sumF += dt * transmittance * sigmaS;
         sumSigmaT += deltaSumSigmaT;
     }
 
-    if(groundInct)
-    {
+    if(groundInct){
         float3 transmittance = exp(-sumSigmaT);
         float3 sunTransmittance = getTransmittance(Transmittance, 0, sunTheta);
-        sumL2 += transmittance * sunTransmittance * max(0, toSunDir.y) *
-                 SunIntensity * (PLANET_ALBEDO / PI);
+        sumL2 += transmittance * sunTransmittance * max(0, toSunDir.y) * SunIntensity * (PLANET_ALBEDO / PI);
     }
 
     innerL2 = sumL2;
@@ -100,22 +91,21 @@ void integrate(
 }
 
 // Wrapper so that the compute shader entry function is not total mess
-float3 computeM(float h, float sunTheta)
-{
+float3 computeM(float h, float sunTheta){
     float3 worldOri = { 0, h + PlanetRadius, 0 };
     float3 toSunDir = { cos(sunTheta), sin(sunTheta), 0 };
 
     // Uniformly sample the unit sphere and compute 2nd order scattering
-    float3 sumL2 = float3(0, 0, 0), sumF = float3(0, 0, 0);
-    for(int i = 0; i < DIR_SAMPLE_COUNT; ++i)
-    {
+    float3 sumL2 = float3(0, 0, 0);
+    float3 sumF = float3(0, 0, 0);
+    for(int i = 0; i < DIR_SAMPLE_COUNT; ++i){
         float3 worldDir = uniformSampleSphere(i, DIR_SAMPLE_COUNT);
 
         float3 innerL2, innerF;
         integrate(worldOri, worldDir, sunTheta, toSunDir, innerL2, innerF);
 
         sumL2 += innerL2;
-        sumF  += innerF;
+        sumF += innerF;
     }
 
     float3 l2 = sumL2 / DIR_SAMPLE_COUNT;
@@ -129,8 +119,7 @@ void computeMain(int3 threadIdx : SV_DispatchThreadID)
 {
     int width, height;
     MultiScattering.GetDimensions(width, height);
-    if(threadIdx.x >= width || threadIdx.y >= height)
-        return;
+    if(threadIdx.x >= width || threadIdx.y >= height) return;
 
     // Indexed by height and sun theta
     float sinSunTheta = lerp(-1, 1, (threadIdx.y + 0.5) / height);
