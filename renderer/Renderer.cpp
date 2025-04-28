@@ -24,10 +24,14 @@ void Renderer::allocateCommandBuffers() {
            "Failed to allocate depth command buffers!");
     ASSERT(vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.composition.data()) == VK_SUCCESS,
            "Failed to allocate post process command buffers!");
-    ASSERT(vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.graphicsToComputeTransferRelease.data()) == VK_SUCCESS,
-           "Failed to allocate graphics to compute transfer release command buffers!");
-    ASSERT(vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.computeToGraphicsTransferAcquire.data()) == VK_SUCCESS,
-           "Failed to allocate compute to graphics transfer acquire buffers!");
+    ASSERT(
+        vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.graphicsToComputeTransferRelease.data()) ==
+        VK_SUCCESS,
+        "Failed to allocate graphics to compute transfer release command buffers!");
+    ASSERT(
+        vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.computeToGraphicsTransferAcquire.data()) ==
+        VK_SUCCESS,
+        "Failed to allocate compute to graphics transfer acquire buffers!");
 
 
     // Allocate compute command buffers
@@ -36,10 +40,14 @@ void Renderer::allocateCommandBuffers() {
            "Failed to allocate clouds command buffers!");
     ASSERT(vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.atmosphere.data()) == VK_SUCCESS,
            "Failed to allocate atmosphere command buffers!");
-    ASSERT(vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.computeToGraphicsTransferRelease.data()) == VK_SUCCESS,
-           "Failed to allocate compute to graphics transfer release buffers!");
-    ASSERT(vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.graphicsToComputeTransferAcquire.data()) == VK_SUCCESS,
-           "Failed to allocate graphics to compute transfer acquire command buffers!");
+    ASSERT(
+        vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.computeToGraphicsTransferRelease.data()) ==
+        VK_SUCCESS,
+        "Failed to allocate compute to graphics transfer release buffers!");
+    ASSERT(
+        vkAllocateCommandBuffers(device.device(), &allocInfo, commandBuffers.graphicsToComputeTransferAcquire.data()) ==
+        VK_SUCCESS,
+        "Failed to allocate graphics to compute transfer acquire command buffers!");
 }
 
 void Renderer::destroyCommandBuffers() {
@@ -97,25 +105,40 @@ void Renderer::createSyncObjects() {
                "Failed to create depth ready semaphore!");
         ASSERT(vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.cloudsReady[i]) == VK_SUCCESS,
                "Failed to create clouds ready semaphore!");
-        ASSERT(vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.atmosphereReady[i]) == VK_SUCCESS,
-               "Failed to create atmosphere ready semaphore!");
-        ASSERT(vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.terrainColorReady[i]) == VK_SUCCESS,
-               "Failed to create terrain ready semaphore!");
-        ASSERT(vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.graphicsToComputeTransferClouds[i]) == VK_SUCCESS,
-               "Failed to create graphics to compute transfer clouds semaphore!");
         ASSERT(
-            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.graphicsToComputeTransferAtmosphere[i]) == VK_SUCCESS,
+            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.atmosphereReady[i]) == VK_SUCCESS,
+            "Failed to create atmosphere ready semaphore!");
+        ASSERT(
+            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.terrainColorReady[i]) == VK_SUCCESS,
+            "Failed to create terrain ready semaphore!");
+        ASSERT(
+            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.graphicsToComputeTransferClouds[i])
+            == VK_SUCCESS,
+            "Failed to create graphics to compute transfer clouds semaphore!");
+        ASSERT(
+            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.graphicsToComputeTransferAtmosphere[
+                i]) == VK_SUCCESS,
             "Failed to create graphics to compute transfer atmosphere semaphore!");
-        ASSERT(vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.graphicsToComputeTransferGeometry[i]) == VK_SUCCESS,
-               "Failed to create graphics to compute transfer G semaphore!");
-        ASSERT(vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.computeToGraphicsTransfer[i]) == VK_SUCCESS,
-               "Failed to create compute to graphics transfer semaphore!");
-        ASSERT(vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.computeToGraphicsSync[i]) == VK_SUCCESS,
-               "Failed to create compute to graphics sync semaphore!");
-        ASSERT(vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.graphicsToComputeSync[i]) == VK_SUCCESS,
-               "Failed to create graphics to compute sync  semaphore!");
-        ASSERT(vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.computeToComputeSync[i]) == VK_SUCCESS,
-               "Failed to create compute to compute sync  semaphore!");
+        ASSERT(
+            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.graphicsToComputeTransferGeometry[i]
+            ) == VK_SUCCESS,
+            "Failed to create graphics to compute transfer G semaphore!");
+        ASSERT(
+            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.computeToGraphicsTransfer[i]) ==
+            VK_SUCCESS,
+            "Failed to create compute to graphics transfer semaphore!");
+        ASSERT(
+            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.computeToGraphicsSync[i]) ==
+            VK_SUCCESS,
+            "Failed to create compute to graphics sync semaphore!");
+        ASSERT(
+            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.graphicsToComputeSync[i]) ==
+            VK_SUCCESS,
+            "Failed to create graphics to compute sync  semaphore!");
+        ASSERT(
+            vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &semaphores.computeToComputeSync[i]) ==
+            VK_SUCCESS,
+            "Failed to create compute to compute sync  semaphore!");
     }
 }
 
@@ -136,7 +159,9 @@ void Renderer::destroySyncObjects() {
 }
 
 void Renderer::prepareGeometry() {
-    Loader(geometry, device, resourceManager).loadglTF(terrainType == TerrainType::Default? ASSET_PATH("terrain.glb") : ASSET_PATH("mountain.glb"));
+    Loader(geometry, device, resourceManager).loadglTF(terrainType == TerrainType::Default
+                                                           ? ASSET_PATH("terrain.glb")
+                                                           : ASSET_PATH("mountain.glb"));
 
     ASSERT(!geometry.vertices.empty(), "No vertices loaded!");
 
@@ -210,7 +235,7 @@ void Renderer::init() {
     // Initialize threadpool
     processorCount = std::thread::hardware_concurrency();
     ASSERT(processorCount > 0, "Failed to detect number of processors!");
-    Logger::log(LOG_LEVEL_DEBUG, "Found %d available threads\n", processorCount);
+    Logger::log(LOG_LEVEL_DEBUG, "Found %d available threads, using 2\n", processorCount);
     threadPool.setThreadCount(2);
 
     // Wait again
@@ -263,7 +288,9 @@ void Renderer::init() {
 }
 
 
-void Renderer::recordSwapChainImageTransition(VkImageLayout from, VkImageLayout to, uint32_t frameIndex, uint32_t imageIndex) {
+void Renderer::recordSwapChainImageTransition(VkImageLayout from, VkImageLayout to, uint32_t frameIndex,
+                                              uint32_t imageIndex) {
+    // The swapchain images are just an array of VkImage handles
     VkImageSubresourceRange subresourceRange = {};
     subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     subresourceRange.baseMipLevel = 0;
@@ -272,7 +299,9 @@ void Renderer::recordSwapChainImageTransition(VkImageLayout from, VkImageLayout 
     subresourceRange.layerCount = 1;
 
 
-    // Transition the swap chain image into present layout
+    // Transition the swap chain image into required layout
+    // Current image is retrieved from the frame manager using the current image index
+    // note that image index differs from frame index as there is always one image for the front-buffer that is being presented
     transitionImageLayout(commandBuffers.composition[frameIndex],
                           frameManager.getSwapChain()->getImage(imageIndex),
                           from, to, subresourceRange);
@@ -632,14 +661,19 @@ void Renderer::handleInput() {
 
 Renderer::Renderer(const int32_t width, const int32_t height, WeatherMap weatherMap, TerrainType terrainType)
     : window{instance, "Vulkan atmospheric renderer", static_cast<int>(width), static_cast<int>(height)},
-      device{instance, window.getSurface()}, resourceManager{device}, frameManager{window, device}, profiler{device, 12},
-      lWidth{static_cast<uint32_t>(width)}, lHeight{static_cast<uint32_t>(height)}, depthPass(device, resourceManager, profiler, geometry),
-      geometryPass(device, resourceManager, profiler, geometry), cloudsPass(device, resourceManager, profiler, weatherMap),
+      device{instance, window.getSurface()}, resourceManager{device}, frameManager{window, device},
+      profiler{device, 12},
+      lWidth{static_cast<uint32_t>(width)}, lHeight{static_cast<uint32_t>(height)},
+      depthPass(device, resourceManager, profiler, geometry),
+      geometryPass(device, resourceManager, profiler, geometry),
+      cloudsPass(device, resourceManager, profiler, weatherMap),
       atmospherePass(device, resourceManager, profiler),
       godRaysPass(device, resourceManager, profiler),
       compositionPass(device, resourceManager, profiler), postProcessingPass(device, resourceManager, profiler),
       weatherMap(weatherMap), terrainType(terrainType) {
     // Initialize the descriptor pool object from which descriptors will be allocated
+    // The numbers here are just for safety - there will never be this many allocations from the pool
+    // We only need combined image samplers - this way we do not need a separate image and sampler objects - uniform buffers and storage images
     descriptorPool = DescriptorPool::Builder(device)
             .setMaxSets(20000)
             .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
@@ -647,7 +681,9 @@ Renderer::Renderer(const int32_t width, const int32_t height, WeatherMap weather
             .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 10000)
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10000)
             .build();
-    ui = std::make_unique<::UserInterface>(device, frameManager, descriptorPool->descriptorPool, window, deltaTime, frameTimes,
+    // This is a pretty basic user interface implementation
+    ui = std::make_unique<::UserInterface>(device, frameManager, descriptorPool->descriptorPool, window, deltaTime,
+                                           frameTimes,
                                            FRAMETIME_BUFFER_SIZE, frameTimeFrameIndex);
     init();
 }
@@ -691,7 +727,8 @@ void Renderer::update() {
 
     // Update post processing data
     postProcessingPass.setSwapChainImage(frameManager.getSwapChain()->getImage(frameManager.getSwapChainImageIndex()));
-    postProcessingPass.setSwapChainImageView(frameManager.getSwapChain()->getImageView(frameManager.getSwapChainImageIndex()));
+    postProcessingPass.setSwapChainImageView(
+        frameManager.getSwapChain()->getImageView(frameManager.getSwapChainImageIndex()));
     postProcessingPass.setSwapChainRenderingExtent(frameManager.getSwapChain()->getSwapChainExtent());
     postProcessingPass.data.time = elapsedTime;
 
@@ -699,8 +736,10 @@ void Renderer::update() {
     atmospherePass.setEye(camera.position);
     atmospherePass.setSunDirection(cloudsPass.uniform.lightDirection.XYZ);
 
-    HmckMat4 shadowProjection = Projection().orthographic(-120.0, 120.0, 120.0, -120.0, camera.znear, camera.zfar, true);
-    HmckMat4 shadowView = HmckLookAt_RH(cloudsPass.uniform.lightDirection.XYZ * 200.0, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+    HmckMat4 shadowProjection = Projection().
+            orthographic(-120.0, 120.0, 120.0, -120.0, camera.znear, camera.zfar, true);
+    HmckMat4 shadowView = HmckLookAt_RH(cloudsPass.uniform.lightDirection.XYZ * 200.0, {0.0f, 0.0f, 0.0f},
+                                        {0.0f, 1.0f, 0.0f});
     HmckMat4 shadowViewProjection = shadowProjection * shadowView;
 
     atmospherePass.setShadowViewProjection(shadowViewProjection);
@@ -721,7 +760,9 @@ void Renderer::update() {
     depthPass.setSunView(shadowView);
 
     HmckVec3 simulatedSunPos = camera.position - cloudsPass.uniform.lightDirection.XYZ * 1000.0f;
-    HmckVec4 clipSpaceSunPos = projection * view * HmckVec4{simulatedSunPos.X, simulatedSunPos.Y, simulatedSunPos.Z, 1.0f};
+    HmckVec4 clipSpaceSunPos = projection * view * HmckVec4{
+                                   simulatedSunPos.X, simulatedSunPos.Y, simulatedSunPos.Z, 1.0f
+                               };
     HmckVec3 ndcSunPos = {
         clipSpaceSunPos.X / clipSpaceSunPos.W,
         clipSpaceSunPos.Y / clipSpaceSunPos.W,
@@ -769,7 +810,9 @@ void Renderer::render() {
         frameTimeFrameIndex = (frameTimeFrameIndex + 1) % FRAMETIME_BUFFER_SIZE;
         frameIndex++;
 
-        // Record and submit frame
+        // Record frame
+        // In background, there is a fence so that the CPU doesn't work on frames that are still being worked on by the GPU
+        // There are 2 frames in flight so basically when the CPU is about to being frame #3, it is blocked by the fence until on of the 2 frames in flight is completed and submitted
         if (frameManager.beginFrame()) {
             // Update the data for the frame
             update();
@@ -779,10 +822,14 @@ void Renderer::render() {
             uint32_t image = frameManager.getSwapChainImageIndex();
 
             // First depth pass
+            // Begin the depth pass command buffer
             frameManager.beginCommandBuffer(commandBuffers.depth[frame]);
 
+            // Record the commands
             depthPass.recordCommands(commandBuffers.depth[frame], frame);
-             {
+            // Submit the command buffer
+            {
+                // Signals a semaphore when finished
                 VkSemaphoreSubmitInfo signalSemaphore = {
                     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
                     .semaphore = semaphores.depthReady[frame],
@@ -802,29 +849,44 @@ void Renderer::render() {
                     .pSignalSemaphoreInfos = &signalSemaphore,
                 };
 
+                // End and submit
                 vkEndCommandBuffer(commandBuffers.depth[frame]);
                 vkQueueSubmit2(device.graphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
             }
 
             // Graphics to compute Sync and transfer
+            // This waits on depth and signals to clouds, atmosphere and terrain passes
             recordGraphicsToComputeTransfers(frame);
-            device.waitIdle();
 
             // Next, compute and terrain in parallel
+            // In this EXACT case is not necessary as the CPU is not doing much work than just sending draw calls and dispatches
+            // But if the terrain (and all the other geometry) rendering would be GPU and/or CPU heavy, which in eg. games is the case, then
+            // this two thread split becomes very beneficial as the dispatch call can be queued while the draw call are being recorder
+            // some games draw opaque geometry in 1000+ draw calls so splitting this into multiple threads saves a lot of performance
+            // Here we use 2 threads as more would be useless
+
             // Compute thread
+            // Atmosphere and clouds could theoretically be recorded in separate threads but that would require another queue as multiple treads are not allowed to access one queue
+            // Because the clouds cb contains basically oly a single dispatch, there is no need to do that
             threadPool.submit([&, frame, image]() {
                 // Cloud pass
                 frameManager.beginCommandBuffer(commandBuffers.clouds[frame]);
+                // record dispatches
                 cloudsPass.recordCommands(commandBuffers.clouds[frame], frame);
                 // Atmosphere pass
                 frameManager.beginCommandBuffer(commandBuffers.atmosphere[frame]);
-                atmospherePass.recordCommands(commandBuffers.atmosphere[frame], frame); {
+                // record dispatches
+                atmospherePass.recordCommands(commandBuffers.atmosphere[frame], frame);
+                // Submit the cloud command buffer
+                {
+                    // Waits on transfer
                     VkSemaphoreSubmitInfo waitSemaphore = {
                         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
                         .semaphore = semaphores.graphicsToComputeTransferClouds[frame],
                         .stageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                     };
 
+                    // Signals when done
                     VkSemaphoreSubmitInfo signalSemaphore = {
                         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
                         .semaphore = semaphores.cloudsReady[frame],
@@ -848,13 +910,17 @@ void Renderer::render() {
 
                     vkEndCommandBuffer(commandBuffers.clouds[frame]);
                     vkQueueSubmit2(device.computeQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-                } {
+                }
+                // Submit the atmosphere pass
+                {
+                    // Waits on transfer
                     VkSemaphoreSubmitInfo waitSemaphore = {
                         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
                         .semaphore = semaphores.graphicsToComputeTransferAtmosphere[frame],
                         .stageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                     };
 
+                    // Signals when finished all the LUTs
                     VkSemaphoreSubmitInfo signalSemaphore = {
                         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
                         .semaphore = semaphores.atmosphereReady[frame],
@@ -880,17 +946,23 @@ void Renderer::render() {
                     vkQueueSubmit2(device.computeQueue(), 1, &submitInfo, VK_NULL_HANDLE);
                 }
             });
+
             // Graphics thread
             threadPool.submit([&, frame, image]() {
                 // Geometry pass
                 frameManager.beginCommandBuffer(commandBuffers.terrain[frame]);
-                geometryPass.recordCommands(commandBuffers.terrain[frame], frame); {
+                // record draw calls
+                geometryPass.recordCommands(commandBuffers.terrain[frame], frame);
+                // Submit
+                {
+                    // Waits on transfer
                     VkSemaphoreSubmitInfo waitSemaphore = {
                         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
                         .semaphore = semaphores.graphicsToComputeTransferGeometry[frame],
                         .stageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
                     };
 
+                    // Signals when finished
                     VkSemaphoreSubmitInfo signalSemaphore = {
                         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
                         .semaphore = semaphores.terrainColorReady[frame],
@@ -917,16 +989,17 @@ void Renderer::render() {
                 }
             });
 
-            // Compute to graphics sync and transfer
+            // At this point we need to wait until all the commands from atmosphere, clouds and terrain are recorded and submitted
             threadPool.wait();
+            // Compute to graphics sync and transfer, this waits on clouds, atmosphere and terrain and signals composition when finished
             recordComputeToGraphicsTransfers(frame);
 
             // Lastly, the composition passes
             frameManager.beginCommandBuffer(commandBuffers.composition[frame]);
+            // We do not even render the god rays if they are not enabled
             if (compositionPass.data.applyGodRays) {
                 godRaysPass.recordCommands(commandBuffers.composition[frame], frame);
-            }
-            else {
+            } else {
                 // This is here for the validation layers to not throw error when the god rays pass is skipped
                 profiler.resetTimestamp(commandBuffers.composition[frame], 12);
                 profiler.resetTimestamp(commandBuffers.composition[frame], 13);
@@ -939,16 +1012,29 @@ void Renderer::render() {
                 profiler.writeTimestamp(commandBuffers.composition[frame], 15, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT);
             }
             compositionPass.recordCommands(commandBuffers.composition[frame], frame);
-            recordSwapChainImageTransition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, frame, image);
+            // Transition swap image into color attachment layout
+            // in big engines this is usually done at the start of the frame along with other resources so that the driver can better optimize that
+            // but this renderer is tiny compared to number of resources in the big engines so there is not a measurable performance benefit in doing that
+            recordSwapChainImageTransition(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, frame,
+                                           image);
             postProcessingPass.recordCommands(commandBuffers.composition[frame], frame);
+            // Ui is recorder here as well
             ui->recordUserInterface(commandBuffers.composition[frame]);
-            recordSwapChainImageTransition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, frame, image);
+            // Transition into present mode
+            recordSwapChainImageTransition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                           frame, image);
 
             // Submit composition command buffer
             // This one is submitted for presentation
             frameManager.submitPresentCommandBuffer(commandBuffers.composition[frame],
-                                                    {semaphores.computeToGraphicsTransfer[frame], semaphores.terrainColorReady[frame]},
-                                                    {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT});
+                                                    {
+                                                        semaphores.computeToGraphicsTransfer[frame],
+                                                        semaphores.terrainColorReady[frame]
+                                                    },
+                                                    {
+                                                        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                                        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+                                                    });
 
             // Submit frame
             frameManager.endFrame();
@@ -966,8 +1052,7 @@ void Renderer::render() {
                 if (compositionPass.data.applyGodRays) {
                     benchmarkResult.godRaysMask.add(results[6]);
                     benchmarkResult.godRaysBlur.add(results[7]);
-                }
-                else {
+                } else {
                     benchmarkResult.godRaysMask.add(0);
                     benchmarkResult.godRaysBlur.add(0);
                 }

@@ -7,6 +7,7 @@
 
 using namespace hammock;
 
+
 int main(int argc, char * argv[]) {
     ArgParser parser;
     parser.addArgument<int32_t>("width", "Window width in pixels", true);

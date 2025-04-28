@@ -31,8 +31,8 @@ public:
     void recordCommands(VkCommandBuffer commandBuffer, uint32_t frameIndex) override;
 
 private:
-    HmckMat4 cameraView, cameraProjection;
-    HmckMat4 sunView, sunProjection;
+    HmckMat4 cameraView{}, cameraProjection{};
+    HmckMat4 sunView{}, sunProjection{};
 
     // Vertex and index buffers
     Buffer *vertexBuffer;

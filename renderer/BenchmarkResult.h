@@ -4,6 +4,7 @@
 
 #define CIRCULAR_BUFFER_SIZE 1500
 
+// Basic circular buffer that is used to collect CIRCULAR_BUFFER_SIZE frames
 class CircularBuffer {
 public:
     CircularBuffer(size_t maxFrames)

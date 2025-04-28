@@ -20,7 +20,7 @@ class ParticipatingMediumScene final : public IScene
         float32_t resX;
         float32_t resY;
         float32_t elapsedTime;
-    } ubo;
+    } ubo{};
 
     struct PushConstants {
         HmckVec4 scattering{0.25,0.5, 1.0};
@@ -32,7 +32,7 @@ class ParticipatingMediumScene final : public IScene
         float jitterStrength = 10.0f;
         int lightSteps = 30;
         float lightStepSize = 0.0145f;
-    } pushConstants;
+    } pushConstants{};
 
 
     // A master graphics pipeline

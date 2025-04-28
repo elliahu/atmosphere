@@ -26,8 +26,8 @@ public:
     void recordCommands(VkCommandBuffer commandBuffer, uint32_t frameIndex) override;
 
 private:
-    GeometryPushConstantData shaderData;
-    HmckMat4 view, projection;
+    GeometryPushConstantData shaderData{};
+    HmckMat4 view{}, projection{};
 
 
     // Buffers

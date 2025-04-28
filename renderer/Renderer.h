@@ -18,14 +18,13 @@ using namespace hammock;
 /**
  * This is the main renderer class
  * It uses hammock engine under the hood, which is my custom Vulkan abstraction layer
- * TODO do a depth prepass so that we can perform depth culling in cloud compute
- * TODO store non-linear cloud depth so we can then blend them using areal perspective
- * TODO light shafts should be performed after the composition by blending clouds mask, and terrain depth
+ * Some operation were coded explicitly without using hammock's abstraction to make it more clear what is actually happening on the GPU at any time
  */
-class Renderer final{
+class Renderer final {
     // Vulkan instance
     VulkanInstance instance{};
     // Window class, uses hammock's window class which stands on top of VulkanSurfer lib
+    // The prefix here is important when building on linux as the Window collides with X11's Window type
     hammock::Window window;
     // Physical device (GPU)
     Device device;
@@ -61,8 +60,9 @@ class Renderer final{
     // Perspective camera
     Camera camera{
         HmckVec3{35.397, 4.296, 67.394},
-        static_cast<float>(lWidth) /  static_cast<float>(lHeight),
-        HmckToRad(HmckAngleDeg(65.f)), 0.1f, 300.f, 34.671, 0.300,};
+        static_cast<float>(lWidth) / static_cast<float>(lHeight),
+        HmckToRad(HmckAngleDeg(65.f)), 0.1f, 300.f, 34.671, 0.300,
+    };
 
     // Movement
     const float movementSpeed = 1.0f; // Units per frame
@@ -93,7 +93,6 @@ class Renderer final{
 
         std::array<VkCommandBuffer, SwapChain::MAX_FRAMES_IN_FLIGHT> graphicsToComputeTransferAcquire;
         std::array<VkCommandBuffer, SwapChain::MAX_FRAMES_IN_FLIGHT> computeToGraphicsTransferAcquire;
-
     } commandBuffers;
 
     // Semaphores signal that the command buffer is finished so that different command buffer waiting for its result can start
@@ -161,6 +160,9 @@ class Renderer final{
      */
     void destroySyncObjects();
 
+    /**
+     * Loads the geometry data and allocates vertex and index buffers int the dedicated GPU memory
+     */
     void prepareGeometry();
 
     /**
@@ -177,9 +179,23 @@ class Renderer final{
      */
     void recordSwapChainImageTransition(VkImageLayout from, VkImageLayout to, uint32_t frameIndex, uint32_t imageIndex);
 
+    /**
+     * Helper method that in two steps performs:
+     * 1. Records and submits all graphics queue release operation in a separate command buffer
+     * 2. Records and submits all compute queue acquire operation in a separate command buffer
+     * During those, some layout transitions are performed to save performance
+     * @param frameIndex
+     */
     void recordGraphicsToComputeTransfers(uint32_t frameIndex);
-    void recordComputeToGraphicsTransfers(uint32_t frameIndex);
 
+    /**
+     * Helper method that in two steps performs:
+     * 1. Records and submits all compute queue release operation in a separate command buffer
+     * 2. Records and submits all graphics queue acquire operation in a separate command buffer
+     * During those, no layout transitions are performed as all the images in transition remain in GENERAL layout
+     * @param frameIndex
+     */
+    void recordComputeToGraphicsTransfers(uint32_t frameIndex);
 
 
     /**
@@ -193,13 +209,15 @@ class Renderer final{
      */
     void update();
 
-
+    // This is used to pass arguments from the main
     WeatherMap weatherMap = WeatherMap::Stratocumulus;
     TerrainType terrainType = TerrainType::Default;
 
 public:
     // Constructor
-    Renderer(const int32_t width, const int32_t height, WeatherMap weatherMap = WeatherMap::Stratocumulus, TerrainType terrainType = TerrainType::Default);
+    Renderer(const int32_t width, const int32_t height, WeatherMap weatherMap = WeatherMap::Stratocumulus,
+             TerrainType terrainType = TerrainType::Default);
+
     // Destructor
     ~Renderer();
 
@@ -208,5 +226,6 @@ public:
      */
     void render();
 
-    BenchmarkResult& getBenchmarkResult() { return benchmarkResult; }
+    // Used to retrieve profiler data after the end of the rendering loo
+    BenchmarkResult &getBenchmarkResult() { return benchmarkResult; }
 };
