@@ -33,7 +33,7 @@ The atmosphere renderer uses [my own Vulkan engine/wrapper](https://github.com/e
 **After the installation, make sure VULKAN_SDK environment variable is present.** It may look like this on Windows: `C:\VulkanSDK\1.4.309.0`. Also, to verify Vulkan SDK installation, you can run `vulkaninfo` command, which will print auto long info about your Vulkan install that at the top of the list contains warnings (if there are any problems) and also the current SDK version that should match the installed version. Then to be sure that you can actually run Vulkan apps, you can run `vkcube` command, which will open a small window with a spinning cube textured as LunarG logo.
 
 ### Setup
-This is te **required** build environment:
+This is the **required** build environment:
 - **Python** (any relevant version) is required as it is used to compile shader using `slangc` compiler that comes with Vulkan SDK. Simple python script has to be run to transpile the shader into SPIR-V format that is used by Vulkan. This is further explained in the Running section.
 - **Vulkan SDK** version 1.3.296 or newer as noted above, please read.
 - **MinGW-w64** version 11.w64 or newer or any toolset that uses `gcc` and `g++` compilers. You can get it from [MSYS2](https://www.msys2.org/), [Winlibs](https://winlibs.com/) or if on Linux, it should be available in your package manager. On Windows [MSYS2](https://www.msys2.org/) is the easiest and recommended way. You can follow a 7 step tutorial [here](https://code.visualstudio.com/docs/cpp/config-mingw#_installing-the-mingww64-toolchain). On Linux you can use apt, see bellow.
