@@ -11,6 +11,7 @@
 #include "ui/UserInterface.h"
 #include "Profiler.h"
 #include "BenchmarkResult.h"
+#include "Animation.h"
 
 
 using namespace hammock;
@@ -125,6 +126,9 @@ class Renderer final {
     // User interface system
     std::unique_ptr<::UserInterface> ui;
 
+    // Animations
+    Animation sunAnimation{};
+
     /**
      * Queues resource for deletion
      * @param resource Resource that will be deleted
@@ -164,6 +168,8 @@ class Renderer final {
      * Loads the geometry data and allocates vertex and index buffers int the dedicated GPU memory
      */
     void prepareGeometry();
+
+    void prepareAnimations();
 
     /**
      * Initializes the renderer

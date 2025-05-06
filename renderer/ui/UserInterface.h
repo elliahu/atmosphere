@@ -33,8 +33,7 @@ class UserInterface final {
     bool showCamera = false;
     bool hideAll = false;
 
-    float angle = 233.f;
-    float sunA = 334.286f, sunE = 48.673f;
+
 
     void showCameraWindow();
 
@@ -45,6 +44,9 @@ class UserInterface final {
     void showEditorWindow();
 
 public:
+    float angle = 233.f;
+    float sunA = 334.286f, sunE = 48.673f;
+
     UserInterface(
         hmck::Device &device,
         hmck::FrameManager &frameManager,

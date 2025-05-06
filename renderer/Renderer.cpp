@@ -227,10 +227,15 @@ void Renderer::prepareGeometry() {
     resourceManager.getResource<Buffer>(indexStagingBuffer)->unmap();
 }
 
+void Renderer::prepareAnimations() {
+    sunAnimation.animate(ui, &::UserInterface::sunA, 1000.0f, 3000, "linear");
+}
+
 void Renderer::init() {
     allocateCommandBuffers();
     createSyncObjects();
     prepareGeometry();
+    prepareAnimations();
 
     // Initialize threadpool
     processorCount = std::thread::hardware_concurrency();
@@ -784,6 +789,8 @@ void Renderer::update() {
     compositionPass.setSunDirection(cloudsPass.uniform.lightDirection);
     compositionPass.setSunColor(cloudsPass.uniform.lightColor);
     compositionPass.setAmbientColor(cloudsPass.uniform.skyColorZenith);
+
+    sunAnimation.update();
 }
 
 

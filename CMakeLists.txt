@@ -49,6 +49,7 @@ add_executable(app
         renderer/composition/GodRaysPass.h
         renderer/Profiler.h
         renderer/BenchmarkResult.h
+        renderer/Animation.h
 
 )
 
