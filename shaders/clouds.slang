@@ -171,7 +171,7 @@ float sampleCloudDensity(float3 p, bool expensive, float lod) {
         // Offset the sampling coordinate of detail noise to simulate atmospheric turbulence further eroding the clouds
         float3 p = float3(staticUv * DETAIL_SCALE, heightFraction);
         if(constants.curliness > 0.0){
-            float2 curlNoise = curlNoiseTexture.SampleLevel(animatedUv, 0.0).xy;
+            float2 curlNoise = curlNoiseTexture.SampleLevel(staticUv, 0.0).xy;
             p.xy += curlNoise.rg * (1.0 - heightFraction)  * constants.curliness;
         }
        

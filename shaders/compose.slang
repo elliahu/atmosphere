@@ -162,11 +162,7 @@ float4 terrainColor(float2 uv, float4 godRaysValue) {
         // Calculate view direction
         float3 viewDir = normalize(terrainWorldPos - data.cameraPosition.xyz);
         
-        // Get god ray contribution and apply it
-        if(data.applyGodRays == 1){
-            float3 godRayContribution = calculateGodRays(uv, godRaysValue, terrainWorldPos, viewDir, 0.0, true);
-            color = applyGodRays(color, godRayContribution, true);
-        }
+        
 
         // Sample the transmittance LUT
         float4 ap = aerialLUT.SampleLevel(float3(uv, 1.0 - depth), 0.0);
@@ -174,10 +170,16 @@ float4 terrainColor(float2 uv, float4 godRaysValue) {
         float eyeTransmittance = ap.w;
         float3 sunTransmittance = getTransmittance(transmittanceLUT, terrainAltitude, asin(data.sunDirection.y));
 
-        float shadowFactor = 1.0;// calculateShadow(terrainWorldPos);
+        float shadowFactor = calculateShadow(terrainWorldPos);
 
         color *= (max(0.25, shadowFactor)) * sunTransmittance * eyeTransmittance;
         color += inScatter;
+
+        // Get god ray contribution and apply it
+        if (data.applyGodRays == 1) {
+            float3 godRayContribution = calculateGodRays(uv, godRaysValue, terrainWorldPos, viewDir, 0.0, true);
+            color = applyGodRays(color, godRayContribution * sunTransmittance, true);
+        }
     }
 
     return float4(postProcessColor(uv, color), terrainColor.a);

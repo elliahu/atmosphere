@@ -127,7 +127,7 @@ class Renderer final {
     std::unique_ptr<::UserInterface> ui;
 
     // Animations
-    Animation sunAnimation{};
+    Animations animations;
 
     /**
      * Queues resource for deletion

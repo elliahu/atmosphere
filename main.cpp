@@ -14,7 +14,7 @@ int main(int argc, char * argv[]) {
     parser.addArgument<int32_t>("height", "Window height in pixels", true);
     parser.addArgument<std::string>("scene", "Scene option: [medium, renderer]", false);
     parser.addArgument<std::string>("weather", "Weather map option: [stratus, stratocumulus, cumulus, nubis]", false);
-    parser.addArgument<std::string>("terrain", "Terrain type: [default, mountain]", false);
+    parser.addArgument<std::string>("terrain", "Terrain type: [default, mountain, planet]", false);
 
     try {
         parser.parse(argc, argv);
@@ -76,6 +76,8 @@ int main(int argc, char * argv[]) {
                 terrainEnum = TerrainType::Default;
             else if (terrain == "mountain")
                 terrainEnum = TerrainType::Mountain;
+            else if (terrain == "planet")
+                terrainEnum = TerrainType::Planet;
             else {
                 Logger::log(LOG_LEVEL_ERROR, "Invalid terrain!");
                 exit(EXIT_FAILURE);

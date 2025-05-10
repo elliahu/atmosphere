@@ -59,7 +59,7 @@ PixelOutput pixelMain(VertexOutput input, float4 fragCoord : SV_Position){
     // Draw sun disk
     float3 sunDir = normalize(data.sunDirection.xyz);
     float sunDot = dot(dir, sunDir);
-    float sunSize = 0.998; // Controls the size of the sun disk (higher = smaller)
+    float sunSize = 0.9985; // Controls the size of the sun disk (higher = smaller)
     
     // Add the sun if we're looking in its direction
     if (sunDot > sunSize) {
@@ -76,7 +76,7 @@ PixelOutput pixelMain(VertexOutput input, float4 fragCoord : SV_Position){
         sunColor *= sunTransmittance;
         
         // Blend the sun with the sky based on the edge factor
-        //skyColor = lerp(skyColor, sunColor, sunEdge);
+        skyColor = lerp(skyColor, sunColor, sunEdge);
     }
 
     output.color = float4(postProcessColor(input.uv, skyColor), 1.0);

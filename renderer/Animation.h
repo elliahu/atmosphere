@@ -197,13 +197,6 @@ public:
             Duration(delayMs)
         ));
 
-        if (!running) {
-            start();
-        }
-
-        std::cout << "Animation added: " << accessor() << " -> " << targetValue
-                  << " over " << durationMs << "ms" << std::endl;
-
         return *this;
     }
 
@@ -230,13 +223,6 @@ public:
             easingFunc,
             Duration(delayMs)
         ));
-
-        if (!running) {
-            start();
-        }
-
-        std::cout << "Animation added (unique_ptr): " << accessor() << " -> " << targetValue
-                  << " over " << durationMs << "ms" << std::endl;
 
         return *this;
     }
@@ -265,13 +251,6 @@ public:
             Duration(delayMs)
         ));
 
-        if (!running) {
-            start();
-        }
-
-        std::cout << "Animation added (shared_ptr): " << accessor() << " -> " << targetValue
-                  << " over " << durationMs << "ms" << std::endl;
-
         return *this;
     }
 
@@ -298,13 +277,6 @@ public:
             Duration(delayMs)
         ));
 
-        if (!running) {
-            start();
-        }
-
-        std::cout << "Animation added (direct ref): " << property << " -> " << targetValue
-                  << " over " << durationMs << "ms" << std::endl;
-
         return *this;
     }
 
@@ -313,17 +285,16 @@ public:
 
         running = true;
         lastUpdateTime = std::chrono::high_resolution_clock::now();
-        std::cout << "Animation started" << std::endl;
     }
 
     void stop() {
         running = false;
         animations.clear();
-        std::cout << "Animation stopped" << std::endl;
     }
 
-    void setCompletionCallback(CompletionCallback callback) {
+    Animation& setCompletionCallback(CompletionCallback callback) {
         onCompleteCallback = callback;
+        return * this;
     }
 
     void update() {
@@ -369,7 +340,6 @@ public:
 
         if (allFinished && !animations.empty()) {
             running = false;
-            std::cout << "All animations completed" << std::endl;
             if (onCompleteCallback) {
                 onCompleteCallback();
             }
