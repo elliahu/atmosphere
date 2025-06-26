@@ -1,9 +1,9 @@
 # Atmosphere renderer
-This is an implementation of a complete atmospheric model and renderer with support of multiple scattering approximation that gives the sky its specific sky-blue color, sun transmittance, aerial-perspective, soft shadows, dynamic time of day, dynamic volumetric clouds with variable sizes, types and coverage and screen space god rays approximation. All that and more **running under 1.5 ms** on RTX 4080. This code is a part of my masters thesis called 'Realistic atmosphere rendering'.
+This is an implementation of a complete atmospheric model and renderer with support of multiple scattering approximation that gives the sky its specific sky-blue color, sun transmittance, aerial-perspective, soft shadows, dynamic time of day, dynamic volumetric clouds with variable sizes, types and coverage and screen space god rays approximation. All that and more **running under 1.5 ms** on RTX 4080. This code is a part of my [masters thesis called 'Realistic atmosphere rendering'](https://dspace.vsb.cz/bitstream/handle/10084/156735/ELI0039_FEI_N0613A140034_2025.pdf?sequence=1&isAllowed=y).
 
 ![Result](img/hero.png)
 
-**Visit [gallery](#gallery) for more images. Visit [performance](#performance) for benchmark results.**
+**Visit [gallery](#gallery) for more images. Visit [performance](#performance) for benchmark results.** To see the thesis PDF, you can [download it here](https://dspace.vsb.cz/bitstream/handle/10084/156735/ELI0039_FEI_N0613A140034_2025.pdf?sequence=1&isAllowed=y).
 
 This `README.md` is here to help you to:
 - Compile and run the code in this repository
