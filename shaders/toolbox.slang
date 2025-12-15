@@ -1,15 +1,16 @@
 // General constants
 static const float PI = 3.14159265358979323846;
 static const float SunIntensity = 3.0;
-static const float WorldScale = 500.0;
-static const float MaxDistance = 10000.0; // Distance of the aerial perspective LUT
+static const float WorldScale = 300.0;
+static const float MaxDistance = 25000.0; // Distance of the aerial perspective LUT
 
 // Atmosphere parameters
+
 static const float PlanetRadius = 6378000.0; // 6378 km
 static const float AtmosphereRadius = 6460000.0; // 6460 km
 static const float OzoneThickness = 30000.0; // 30 km
 static const float OzoneCenterHeight = 25000.0; // 25 km
-static const float HDensityMie = 1200.0;
+static const float HDensityMie = 12000.0;
 static const float AbsorbMie = 4.4 * 1e-6;
 static const float AsymmetryMie = 0.8;
 static const float ScatterMie = 3.996 * 1e-6;

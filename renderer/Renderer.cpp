@@ -291,34 +291,36 @@ void Renderer::prepareAnimations() {
                     .animate(ui, &::UserInterface::sunA, 380.0f, 15'000, "linear")
                     .setCompletionCallback([&]() { animations.godrays.playing = false; });
         };
+
+
+
     }
 
-    if (terrainType == TerrainType::Mountain) {
-        animations.softshadow.init = [&]() {
-            camera.position = {35.397, 4.296, 67.394};
-            camera.yaw = 35.690;
-            camera.pitch = 0.300;
-            camera.fov = 0.922;
-            ui->sunA = 215.0;
-            ui->sunE = 0.0;
-            cloudsPass.properties.globalDensity = 0.0f;
+    animations.softshadow.init = [&]() {
 
-            animations.softshadow.animation.stop();
-            animations.softshadow.animation
-                    .animate(ui, &::UserInterface::sunE, 30.0f, 10'000, "linear")
-                    .animate(ui, &::UserInterface::sunA, 218.0f, 10'000, "linear")
-                    .setCompletionCallback([&]() {
-                        animations.softshadow.animation.stop();
-                        ui->sunA = 180.0;
-                        ui->sunE = 16.0;
-                        animations.softshadow.animation
-                                .animate(ui, &::UserInterface::sunA, 238.0f, 8'000, "linear")
-                                .setCompletionCallback([&]() {
-                                    animations.softshadow.playing = false;
-                                })
-                                .start();
-                    });
-        };
+        ui->sunA = 198.318;
+        ui->sunE = 3.673;
+        cloudsPass.properties.globalDensity = 0.0f;
+
+        animations.softshadow.animation.stop();
+        animations.softshadow.animation
+                .animate(ui, &::UserInterface::sunE, 57.0f, 3'000, "easeInOutCubic")
+                .setCompletionCallback([&]() {
+                    animations.softshadow.animation.stop();
+                     ui->sunE = 57.0;
+                    animations.softshadow.animation
+                            .animate(ui, &::UserInterface::sunE,  3.673f, 3'000, "easeInOutCubic")
+                            .setCompletionCallback([&]() {
+                                animations.softshadow.playing = false;
+                            })
+                            .start();
+                });
+    };
+
+    if (terrainType == TerrainType::Mountain) {
+
+
+
 
         animations.sky.init = [&]() {
             camera.position = {35.397, 4.296, 67.394};
@@ -360,7 +362,7 @@ void Renderer::init() {
     // Initialize passes
     depthPass.setVertexBuffer(resourceManager.getResource<Buffer>(vertexBuffer));
     depthPass.setIndexBuffer(resourceManager.getResource<Buffer>(indexBuffer));
-    depthPass.initialize(HmckVec2{4096.f, 4096.f});
+    depthPass.initialize(HmckVec2{1920.f, 1080.f});
 
     atmospherePass.setShadowMap(depthPass.getSunDepth());
     atmospherePass.initialize();

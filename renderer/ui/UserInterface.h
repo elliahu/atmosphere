@@ -48,7 +48,7 @@ class UserInterface final {
 
 public:
     float angle = 233.f;
-    float sunA = 334.286f, sunE = 48.673f;
+    float sunA = 126.318, sunE = 46.0;
     bool playAnimations = true;
     bool hideAll = false;
 

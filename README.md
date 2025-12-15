@@ -1,7 +1,9 @@
 # Atmosphere renderer
 This is an implementation of a complete atmospheric model and renderer with support of multiple scattering approximation that gives the sky its specific sky-blue color, sun transmittance, aerial-perspective, soft shadows, dynamic time of day, dynamic volumetric clouds with variable sizes, types and coverage and screen space god rays approximation. All that and more **running under 1.5 ms** on RTX 4080. This code is a part of my masters thesis called 'Realistic atmosphere rendering'.
 
-![Result](img/hero.png)
+
+![](img/atmosphere.png)
+![](img/atmosphere2.png)
 
 **Visit [gallery](#gallery) for more images. Visit [performance](#performance) for benchmark results.**
 
@@ -198,11 +200,10 @@ AutoDelete weatherMapData(
 | **Total frame (with terrain)**       | 6.438 ms | 5.758 ms | **1.773 ms** |
 
 # Gallery
-![One](img/polojasno.png)
-![Two](img/lightshafts_on.png)
-![Three](img/aerial_perspective.png)
-![Four](img/lighthafts_result.png)
-![Five](img/covered_sky.png)
+![](img/clouds.png)
+![](img/1.png)
+![](img/2.png)
+![](img/3.png)
 
 # Troubleshooting
 This might help you if something doesn't work

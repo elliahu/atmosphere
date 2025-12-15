@@ -164,7 +164,7 @@ void CloudsPass::prepareResources() {
         } else if(weatherMapEnum == WeatherMap::Stratocumulus) {
             weatherMapName = ASSET_PATH("weather/stratocumulus.png");
         } else if(weatherMapEnum == WeatherMap::Cumulus) {
-            weatherMapName = ASSET_PATH("weather/cumulus.png");
+            weatherMapName = ASSET_PATH("weather/cumulus3.png");
         } else if(weatherMapEnum == WeatherMap::Nubis) {
             weatherMapName = ASSET_PATH("weather/nubis.png");
         }

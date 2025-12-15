@@ -59,12 +59,12 @@ PixelOutput pixelMain(VertexOutput input, float4 fragCoord : SV_Position){
     // Draw sun disk
     float3 sunDir = normalize(data.sunDirection.xyz);
     float sunDot = dot(dir, sunDir);
-    float sunSize = 0.9985; // Controls the size of the sun disk (higher = smaller)
+    float sunSize = 0.9995; // Controls the size of the sun disk (higher = smaller)
     
     // Add the sun if we're looking in its direction
     if (sunDot > sunSize) {
         // Calculate a smooth edge for the sun
-        float sunEdge = smoothstep(sunSize, sunSize + 0.001, sunDot);
+        float sunEdge = smoothstep(sunSize, sunSize + 0.0001, sunDot);
         
         // Sun color 
         float3 sunColor = float3(2.0);
