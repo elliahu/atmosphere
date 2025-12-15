@@ -18,7 +18,7 @@ class UserInterface final {
     PostProcessingPushConstantData * postProcessingPushConstant;
     CompositionData * compositionData;
     GodRaysCoefficients * godRaysCoefficients;
-
+    Animations * animations;
 
 
 
@@ -28,13 +28,14 @@ class UserInterface final {
     int &frameTimeFrameIndex;
 
     bool showEditor = false;
+    bool showAnimationPlayer = true;
     bool showDebug = false;
     bool showPostProc = false;
     bool showCamera = false;
-    bool hideAll = false;
 
-    float angle = 233.f;
-    float sunA = 334.286f, sunE = 48.673f;
+
+
+
 
     void showCameraWindow();
 
@@ -43,8 +44,14 @@ class UserInterface final {
     void showDebugWindow();
 
     void showEditorWindow();
+    void showAnimationPlayerWindow();
 
 public:
+    float angle = 233.f;
+    float sunA = 126.318, sunE = 46.0;
+    bool playAnimations = true;
+    bool hideAll = false;
+
     UserInterface(
         hmck::Device &device,
         hmck::FrameManager &frameManager,
@@ -71,6 +78,7 @@ public:
     void setCloudsPushData(CloudsPushConstantData * data) { cloudsPushConstant = data; }
     void setCompositionData(CompositionData * data) { compositionData = data; }
     void setGodRaysCoefficients(GodRaysCoefficients * data) {godRaysCoefficients = data;}
+    void setAnimations(Animations * data) { animations = data; }
 
     void recordUserInterface(VkCommandBuffer commandBuffer);
 };

@@ -159,9 +159,18 @@ void Renderer::destroySyncObjects() {
 }
 
 void Renderer::prepareGeometry() {
-    Loader(geometry, device, resourceManager).loadglTF(terrainType == TerrainType::Default
-                                                           ? ASSET_PATH("terrain.glb")
-                                                           : ASSET_PATH("mountain.glb"));
+    try {
+        std::string assetPath = terrainType == TerrainType::Default
+                                    ? ASSET_PATH("terrain.glb")
+                                    : (terrainType == TerrainType::Mountain
+                                           ? ASSET_PATH("mountain.glb")
+                                           : ASSET_PATH("planet.glb"));
+        Loader(geometry, device, resourceManager).loadglTF(assetPath);
+        Logger::log(LOG_LEVEL_DEBUG, "Loaded geometry file %s\n", assetPath.c_str());
+    } catch (const std::exception &e) {
+        Logger::log(LOG_LEVEL_ERROR, e.what());
+        exit(EXIT_FAILURE);
+    }
 
     ASSERT(!geometry.vertices.empty(), "No vertices loaded!");
 
@@ -227,10 +236,116 @@ void Renderer::prepareGeometry() {
     resourceManager.getResource<Buffer>(indexStagingBuffer)->unmap();
 }
 
+void Renderer::prepareAnimations() {
+    if (terrainType == TerrainType::Planet) {
+        animations.sunrise.init = [&]() {
+            // Initial state
+            camera.position = {68.397, 6.296, 67.394};
+            camera.yaw = 41.091;
+            camera.pitch = 0.326;
+            camera.fov = 1.509;
+            ui->sunA = 257.0;
+            ui->sunE = 0.0;
+            cloudsPass.properties.cloudSpeed = 4800.f;
+            cloudsPass.properties.eccentricity = .880f;
+
+            animations.sunrise.animation.stop();
+            animations.sunrise.animation
+                    .animate(ui, &::UserInterface::sunA, 280.0f, 20'000, "linear")
+                    .animate(ui, &::UserInterface::sunE, 35.0f, 20'000, "easInCubic")
+                    .animate(&cloudsPass.properties, &CloudsPushConstantData::eccentricity, .65f, 20'000, "linear")
+                    .setCompletionCallback([&]() { animations.sunrise.playing = false; });
+        };
+
+
+        animations.timelaps.init = [&]() {
+            camera.position = {-78.494, 7.896, -48.049};
+            camera.yaw = 45.060;
+            camera.pitch = 0.326;
+            camera.fov = 1.509;
+            ui->angle = 16.265;
+            ui->sunE = 0.f;
+            ui->sunA = 300.0f;
+            cloudsPass.properties.cloudSpeed = 850.0;
+            cloudsPass.properties.eccentricity = .9f;
+
+            animations.timelaps.animation.stop();
+            animations.timelaps.animation
+                    .animate(ui, &::UserInterface::sunE, 20.0f, 15'000, "linear")
+                    .setCompletionCallback([&]() { animations.timelaps.playing = false; });
+        };
+
+        animations.godrays.init = [&]() {
+            camera.position = {-48.399, 3.028, -32.77};
+            camera.yaw = 46.645;
+            camera.pitch = 0.392;
+            camera.fov = 1.506;
+            ui->angle = 198.265;
+            ui->sunA = 216.0;
+            ui->sunE = 18.0;
+            cloudsPass.properties.cloudSpeed = 850.0;
+            cloudsPass.properties.eccentricity = .9f;
+
+            animations.godrays.animation.stop();
+            animations.godrays.animation
+                    .animate(ui, &::UserInterface::sunA, 380.0f, 15'000, "linear")
+                    .setCompletionCallback([&]() { animations.godrays.playing = false; });
+        };
+
+
+
+    }
+
+    animations.softshadow.init = [&]() {
+
+        ui->sunA = 198.318;
+        ui->sunE = 3.673;
+        cloudsPass.properties.globalDensity = 0.0f;
+
+        animations.softshadow.animation.stop();
+        animations.softshadow.animation
+                .animate(ui, &::UserInterface::sunE, 57.0f, 3'000, "easeInOutCubic")
+                .setCompletionCallback([&]() {
+                    animations.softshadow.animation.stop();
+                     ui->sunE = 57.0;
+                    animations.softshadow.animation
+                            .animate(ui, &::UserInterface::sunE,  3.673f, 3'000, "easeInOutCubic")
+                            .setCompletionCallback([&]() {
+                                animations.softshadow.playing = false;
+                            })
+                            .start();
+                });
+    };
+
+    if (terrainType == TerrainType::Mountain) {
+
+
+
+
+        animations.sky.init = [&]() {
+            camera.position = {35.397, 4.296, 67.394};
+            camera.yaw = 33.002;
+            camera.pitch = 0.170;
+            camera.fov = 0.902;
+            ui->sunA = 360.0;
+            ui->sunE = 0.0;
+            cloudsPass.properties.globalDensity = 0.0f;
+
+            animations.sky.animation.stop();
+            animations.sky.animation
+                    .animate(ui, &::UserInterface::sunE, 30.0f, 5'000, "easeOutCubic")
+                    .setCompletionCallback([&]() {
+                        animations.sky.playing = false;
+                    });
+        };
+    }
+}
+
 void Renderer::init() {
     allocateCommandBuffers();
     createSyncObjects();
     prepareGeometry();
+    prepareAnimations();
 
     // Initialize threadpool
     processorCount = std::thread::hardware_concurrency();
@@ -247,7 +362,7 @@ void Renderer::init() {
     // Initialize passes
     depthPass.setVertexBuffer(resourceManager.getResource<Buffer>(vertexBuffer));
     depthPass.setIndexBuffer(resourceManager.getResource<Buffer>(indexBuffer));
-    depthPass.initialize(HmckVec2{(float) lWidth, (float) lHeight});
+    depthPass.initialize(HmckVec2{1920.f, 1080.f});
 
     atmospherePass.setShadowMap(depthPass.getSunDepth());
     atmospherePass.initialize();
@@ -285,6 +400,13 @@ void Renderer::init() {
     ui->setPostProccessingData(&postProcessingPass.data);
     ui->setCompositionData(&compositionPass.data);
     ui->setGodRaysCoefficients(&godRaysPass.coefficients);
+    ui->setAnimations(&animations);
+
+    window.listenKeyRelease([&](auto key) {
+       if(key == Surfer::KeyCode::KeyH) {
+           ui->hideAll = !ui->hideAll;
+       }
+   });
 }
 
 
@@ -784,6 +906,10 @@ void Renderer::update() {
     compositionPass.setSunDirection(cloudsPass.uniform.lightDirection);
     compositionPass.setSunColor(cloudsPass.uniform.lightColor);
     compositionPass.setAmbientColor(cloudsPass.uniform.skyColorZenith);
+
+    if (ui->playAnimations) {
+        animations.update();
+    }
 }
 
 

@@ -138,6 +138,106 @@ void ::UserInterface::showEditorWindow() {
     ImGui::End();
 }
 
+void ::UserInterface::showAnimationPlayerWindow() {
+    ImGui::Begin("Animation Player", (bool *) false,
+                ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Checkbox("Play animations", &playAnimations);
+
+    ImGui::SeparatorText("Sunrise timelaps");
+    // Set text color based on animation status
+    if (animations->sunrise.playing) {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255)); // Green
+        ImGui::Text("Status: Playing");
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255)); // Red
+        ImGui::Text("Status: Stopped");
+    }
+    ImGui::PopStyleColor(); // Restore previous text color
+    if(ImGui::Button("Play")) {
+        animations->sunrise.playing = true;
+        animations->sunrise.animation.start();
+    }
+    if(ImGui::Button("Init")) {
+        animations->sunrise.init();
+    }
+
+    ImGui::SeparatorText("Cloud movement timelaps");
+    // Set text color based on animation status
+    if (animations->timelaps.playing) {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255)); // Green
+        ImGui::Text("Status: Playing");
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255)); // Red
+        ImGui::Text("Status: Stopped");
+    }
+    ImGui::PopStyleColor(); // Restore previous text color
+    if(ImGui::Button("-Play")) {
+        animations->timelaps.playing = true;
+        animations->timelaps.animation.start();
+    }
+    if(ImGui::Button("-Init")) {
+        animations->timelaps.init();
+    }
+
+
+    ImGui::SeparatorText("God rays");
+    // Set text color based on animation status
+    if (animations->godrays.playing) {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255)); // Green
+        ImGui::Text("Status: Playing");
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255)); // Red
+        ImGui::Text("Status: Stopped");
+    }
+    ImGui::PopStyleColor(); // Restore previous text color
+    if(ImGui::Button("--Play")) {
+        animations->godrays.playing = true;
+        animations->godrays.animation.start();
+    }
+    if(ImGui::Button("--Init")) {
+        animations->godrays.init();
+    }
+
+    ImGui::SeparatorText("Soft shadows");
+    // Set text color based on animation status
+    if (animations->softshadow.playing) {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255)); // Green
+        ImGui::Text("Status: Playing");
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255)); // Red
+        ImGui::Text("Status: Stopped");
+    }
+    ImGui::PopStyleColor(); // Restore previous text color
+    if(ImGui::Button("---Play")) {
+        animations->softshadow.playing = true;
+        animations->softshadow.animation.start();
+    }
+    if(ImGui::Button("---Init")) {
+        animations->softshadow.init();
+    }
+
+    ImGui::SeparatorText("Sky");
+    // Set text color based on animation status
+    if (animations->sky.playing) {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255)); // Green
+        ImGui::Text("Status: Playing");
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255)); // Red
+        ImGui::Text("Status: Stopped");
+    }
+    ImGui::PopStyleColor(); // Restore previous text color
+    if(ImGui::Button("----Play")) {
+        animations->sky.playing = true;
+        animations->sky.animation.start();
+    }
+    if(ImGui::Button("----Init")) {
+        animations->sky.init();
+    }
+
+
+    ImGui::End();
+}
+
 void ::UserInterface::recordUserInterface(VkCommandBuffer commandBuffer) {
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -154,11 +254,15 @@ void ::UserInterface::recordUserInterface(VkCommandBuffer commandBuffer) {
     ui.beginUserInterface();
 
 
+
     ImGui::PushStyleColor(ImGuiCol_Border, {0.f, 0.f, 0.f, 0.f});
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Window")) {
             if (ImGui::MenuItem("Atmosphere editor", NULL, showEditor)) {
                 showEditor = !showEditor;
+            }
+            if (ImGui::MenuItem("Animation Player", NULL, showAnimationPlayer)) {
+                showAnimationPlayer = !showAnimationPlayer;
             }
             if (ImGui::MenuItem("Debug and Performance", NULL, showDebug)) {
                 showDebug = !showDebug;
@@ -172,7 +276,7 @@ void ::UserInterface::recordUserInterface(VkCommandBuffer commandBuffer) {
             if (ImGui::MenuItem("Post processing", NULL, showPostProc)) {
                 showPostProc = !showPostProc;
             }
-            if (ImGui::MenuItem("Hide all", NULL, hideAll)) {
+            if (ImGui::MenuItem("Hide all", "H", hideAll)) {
                 hideAll = !hideAll;
             }
             ImGui::EndMenu();
@@ -212,6 +316,9 @@ void ::UserInterface::recordUserInterface(VkCommandBuffer commandBuffer) {
         showPostProcsSettingsWindow();
     }
 
+    if (showAnimationPlayer && !hideAll) {
+        showAnimationPlayerWindow();
+    }
 
 
     ui.endUserInterface(commandBuffer);

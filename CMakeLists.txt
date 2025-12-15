@@ -49,6 +49,7 @@ add_executable(app
         renderer/composition/GodRaysPass.h
         renderer/Profiler.h
         renderer/BenchmarkResult.h
+        renderer/Animation.h
 
 )
 
@@ -58,4 +59,4 @@ target_include_directories(app PRIVATE hammock/include)
 target_include_directories(app PRIVATE renderer)
 target_include_directories(app PRIVATE medium)
 #target_compile_definitions(app PRIVATE CLOUD_RENDER_SUBSAMPLE)
-#target_compile_definitions(app PRIVATE HIGH_QUALITY_CLOUDS)
+target_compile_definitions(app PRIVATE HIGH_QUALITY_CLOUDS)

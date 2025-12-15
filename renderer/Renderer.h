@@ -11,6 +11,7 @@
 #include "ui/UserInterface.h"
 #include "Profiler.h"
 #include "BenchmarkResult.h"
+#include "Animation.h"
 
 
 using namespace hammock;
@@ -59,9 +60,9 @@ class Renderer final {
 
     // Perspective camera
     Camera camera{
-        HmckVec3{35.397, 4.296, 67.394},
+        HmckVec3{-38.239, 6.6357, 97.474},
         static_cast<float>(lWidth) / static_cast<float>(lHeight),
-        HmckToRad(HmckAngleDeg(65.f)), 0.1f, 300.f, 34.671, 0.300,
+        HmckToRad(HmckAngleDeg(95.0f)), 0.1f, 300.f, 37.255, 0.517,
     };
 
     // Movement
@@ -125,6 +126,9 @@ class Renderer final {
     // User interface system
     std::unique_ptr<::UserInterface> ui;
 
+    // Animations
+    Animations animations;
+
     /**
      * Queues resource for deletion
      * @param resource Resource that will be deleted
@@ -164,6 +168,8 @@ class Renderer final {
      * Loads the geometry data and allocates vertex and index buffers int the dedicated GPU memory
      */
     void prepareGeometry();
+
+    void prepareAnimations();
 
     /**
      * Initializes the renderer

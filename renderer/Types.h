@@ -1,6 +1,8 @@
 #pragma once
 #include <hammock/hammock.h>
 
+#include "Animation.h"
+
 #define CWD(path) "../" path
 #define ASSET_PATH(asset) CWD("assets/" asset)
 #define COMPILED_SHADER_PATH(shader) CWD("spv/" shader ".spv")
@@ -16,6 +18,47 @@ enum class WeatherMap{
 enum class TerrainType{
     Default,
     Mountain,
+    Planet
+};
+
+struct Animations {
+    struct {
+        Animation animation{};
+        std::function<void()> init = nullptr;
+        bool playing = false;
+    } sunrise;
+
+    struct {
+        Animation animation{};
+        std::function<void()> init = nullptr;
+        bool playing = false;
+    } timelaps;
+
+    struct {
+        Animation animation{};
+        std::function<void()> init = nullptr;
+        bool playing = false;
+    } godrays;
+
+    struct {
+        Animation animation{};
+        std::function<void()> init = nullptr;
+        bool playing = false;
+    } softshadow;
+
+    struct {
+        Animation animation{};
+        std::function<void()> init = nullptr;
+        bool playing = false;
+    } sky;
+
+    void update() {
+        sunrise.animation.update();
+        timelaps.animation.update();
+        godrays.animation.update();
+        softshadow.animation.update();
+        sky.animation.update();
+    }
 };
 
 struct GeometryPushConstantData {
@@ -58,7 +101,7 @@ struct CloudsPushConstantData {
     float detailScale = 50.0f;
     float curliness = 2.0f;
     float absorption = 0.0042f;
-    float eccentricity = 0.35f;
+    float eccentricity = 0.65f;
     float intensity = .95f;
     float spread = 1.0f;
     float ambientStrength = 0.25;
